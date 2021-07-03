@@ -1,10 +1,10 @@
 [package]
 description = "suisei-music companion"
 edition = "2018"
-homepage = "https://github.com/outloudvi/suimu"
+homepage = "https://github.com/suisei-cn/suimu"
 license = "MIT"
 name = "suimu"
-repository = "https://github.com/outloudvi/suimu"
+repository = "https://github.com/suisei-cn/suimu.git"
 version = "0.1.0"
 
 [dependencies]
