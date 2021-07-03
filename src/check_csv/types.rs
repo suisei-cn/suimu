@@ -1,15 +1,35 @@
 use serde::Deserialize;
+use std::fmt::{Display, Formatter, Result};
 
 #[derive(Debug, Deserialize)]
 pub struct Music {
-    datetime: String,
-    video_type: String,
-    video_id: String,
-    clip_start: Option<f32>,
-    clip_end: Option<f32>,
-    status: Option<u16>,
-    title: String,
-    artist: String,
-    performer: String,
-    comment: String,
+    pub datetime: String,
+    pub video_type: String,
+    pub video_id: String,
+    pub clip_start: Option<f32>,
+    pub clip_end: Option<f32>,
+    pub status: Option<u16>,
+    pub title: String,
+    pub artist: String,
+    pub performer: String,
+    pub comment: String,
+}
+
+pub const PLATFORM_SUPPORTED: [&str; 4] = ["TWITTER", "BILIBILI", "YOUTUBE", ""];
+
+impl Display for Music {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+        let video_fmtid = if self.video_type.is_empty() {
+            format!("paid, {}", self.datetime)
+        } else {
+            format!("{}/{}", self.video_type, self.video_id)
+        };
+        if self.title.is_empty() {
+            return write!(f, "Untitled ({})", video_fmtid);
+        }
+        if self.artist.is_empty() {
+            return write!(f, "{} ({})", self.title, video_fmtid);
+        }
+        write!(f, "{} - {} ({})", self.artist, self.title, video_fmtid)
+    }
 }

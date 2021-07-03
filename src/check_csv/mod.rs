@@ -1,7 +1,6 @@
-mod types;
+pub mod types;
 
-use types::Music;
-
+use crate::Music;
 use csv::Reader;
 
 pub fn check_csv(text: &str) -> Result<Vec<Music>, String> {
