@@ -1,7 +1,11 @@
 [package]
-name = "suimu"
-version = "0.1.0"
+description = "suisei-music companion"
 edition = "2018"
+homepage = "https://github.com/outloudvi/suimu"
+license = "MIT"
+name = "suimu"
+repository = "https://github.com/outloudvi/suimu"
+version = "0.1.0"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
