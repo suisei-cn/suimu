@@ -13,10 +13,10 @@ about = clap::crate_description ! ()
 )]
 struct Opts {
     #[clap(
-    about = "The CSV file to check",
-    default_value = "suisei-music.csv",
-    index = 1,
-    required = true
+        about = "The CSV file to check",
+        default_value = "suisei-music.csv",
+        index = 1,
+        required = true
     )]
     csv_file: String,
 }

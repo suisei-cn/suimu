@@ -2,13 +2,13 @@ mod types;
 
 use types::Music;
 
-use csv::{Reader};
+use csv::Reader;
 
 pub fn check_csv(text: &str) -> Result<Vec<Music>, String> {
     let mut reader = Reader::from_reader(text.as_bytes());
     let mut ret = vec![];
 
-        for result in reader.deserialize() {
+    for result in reader.deserialize() {
         match result {
             Ok(v) => {
                 ret.push(v);
