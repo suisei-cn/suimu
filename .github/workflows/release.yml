@@ -1,0 +1,37 @@
+name: Release
+on:
+  - push
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ ubuntu-latest, macos-latest ]
+    runs-on: ${{ matrix.os }}
+    if: startsWith(github.ref, 'refs/tags/')
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+
+      - name: Setup toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+
+      - name: Run cargo build
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --bins --release
+
+      - name: Rename builds
+        run: |
+          pushd target/release
+          mv suimu-check suimu-check-${{ runner.os }}
+          popd
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: target/release/suimu-*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
