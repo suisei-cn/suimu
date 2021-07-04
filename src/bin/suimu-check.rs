@@ -1,10 +1,10 @@
 use std::fs::File;
 use std::path::PathBuf;
+use std::str::FromStr;
 use structopt::clap;
 use structopt::StructOpt;
 use suimu::utils::{check_csv, check_logic};
-use suimu::MaybeMusic;
-use suimu::PLATFORM_SUPPORTED;
+use suimu::PlatformSupported;
 
 extern crate pretty_env_logger;
 #[macro_use]
@@ -27,13 +27,6 @@ struct Opt {
 
     #[structopt(short, long, about = "Only check formats")]
     format_only: bool,
-}
-
-fn check_support(x: &MaybeMusic) -> Result<(), &str> {
-    if !PLATFORM_SUPPORTED.contains(&&*x.video_type) {
-        return Err("Platform not supported");
-    }
-    Ok(())
 }
 
 fn main() {
@@ -79,7 +72,7 @@ fn main() {
     // Support analysis
     info!("Checking entry support...");
     for x in &arr {
-        if let Err(v) = check_support(x) {
+        if let Err(v) = PlatformSupported::from_str(&x.video_type) {
             warn!("{}: {}", x, v);
         }
     }

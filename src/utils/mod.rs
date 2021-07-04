@@ -4,12 +4,21 @@ mod process_music;
 
 use csv::{Error, Reader};
 use std::io::Read;
+use strum_macros;
 
 pub use maybemusic::MaybeMusic;
 pub use music::Music;
 pub use process_music::process_music;
 
-pub const PLATFORM_SUPPORTED: [&str; 4] = ["TWITTER", "BILIBILI", "YOUTUBE", ""];
+#[derive(Debug, PartialEq, strum_macros::EnumString)]
+pub enum PlatformSupported {
+    #[strum(serialize = "TWITTER")]
+    Twitter,
+    #[strum(serialize = "BILIBILI")]
+    Bilibili,
+    #[strum(serialize = "YOUTUBE")]
+    YouTube,
+}
 
 pub fn check_csv(source: impl Read) -> Result<Vec<MaybeMusic>, String> {
     let mut reader = Reader::from_reader(source);

@@ -1,8 +1,9 @@
-use crate::{MaybeMusic, PLATFORM_SUPPORTED};
+use crate::{MaybeMusic, PlatformSupported};
 use anyhow::{anyhow, Error, Result};
 use chrono::{DateTime, FixedOffset};
 use std::convert::TryFrom;
 use std::hash::Hasher;
+use std::str::FromStr;
 use twox_hash::XxHash64;
 
 #[derive(Debug)]
@@ -63,7 +64,7 @@ impl TryFrom<MaybeMusic> for Music {
         let video_type = v.video_type.trim();
         let title = v.title.trim();
 
-        if !PLATFORM_SUPPORTED.contains(&video_type) {
+        if PlatformSupported::from_str(video_type).is_err() {
             return Err(anyhow!("Platform not supported"));
         }
 
