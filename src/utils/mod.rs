@@ -2,6 +2,7 @@ mod maybemusic;
 mod music;
 mod process_music;
 
+use anyhow::{anyhow, Result};
 use csv::{Error, Reader};
 use std::io::Read;
 
@@ -21,28 +22,28 @@ pub enum Platform {
     YouTube,
 }
 
-pub fn check_csv(source: impl Read) -> Result<Vec<MaybeMusic>, String> {
+pub fn check_csv(source: impl Read) -> Result<Vec<MaybeMusic>> {
     let mut reader = Reader::from_reader(source);
     match reader
         .deserialize()
         .collect::<Result<Vec<MaybeMusic>, Error>>()
     {
         Ok(data) => Ok(data),
-        Err(err) => Err(err.to_string()),
+        Err(err) => Err(anyhow!(err)),
     }
 }
 
-pub fn check_logic(x: &MaybeMusic) -> Result<(), &str> {
+pub fn check_logic(x: &MaybeMusic) -> Result<()> {
     // clip_start & clip_end existence
     if x.clip_start.is_none() ^ x.clip_end.is_none() {
-        return Err("Only one of clip_start or clip_end exists");
+        return Err(anyhow!("Only one of clip_start or clip_end exists"));
     }
 
     if x.clip_start.is_some()
         && x.clip_end.is_some()
         && (x.clip_start.unwrap() > x.clip_end.unwrap())
     {
-        return Err("clip_start is later than clip_end");
+        return Err(anyhow!("clip_start is later than clip_end"));
     }
     Ok(())
 }

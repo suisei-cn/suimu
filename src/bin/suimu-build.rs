@@ -1,3 +1,4 @@
+use anyhow::{ensure, Result};
 use std::convert::TryInto;
 use std::fs::File;
 use std::path::PathBuf;
@@ -6,9 +7,7 @@ use structopt::StructOpt;
 use suimu::utils::{check_csv, process_music, EnvConf};
 use suimu::Music;
 
-extern crate pretty_env_logger;
-#[macro_use]
-extern crate log;
+use log::{debug, info, warn};
 
 #[derive(StructOpt)]
 #[structopt(
@@ -36,7 +35,7 @@ struct Opt {
     ytdl: String,
 }
 
-fn main() {
+fn main() -> Result<()> {
     // Set default logging level to INFO
     if std::env::var("RUST_LOG").is_err() {
         std::env::set_var("RUST_LOG", "info");
@@ -52,25 +51,19 @@ fn main() {
     debug!("Output path: {:?}", opts.output_dir);
     debug!("Source path: {:?}", opts.source_dir);
 
-    if !csv_file.exists() {
-        error!("Cannot open CSV file.");
-        std::process::exit(2);
-    }
+    ensure!(csv_file.exists(), format!("{:?} does not exists", csv_file));
 
-    let read_file = File::open(csv_file).unwrap();
-    let check_result = check_csv(&read_file);
+    let read_file = File::open(csv_file)?;
+    let check_result = check_csv(&read_file)?;
 
-    if let Err(e) = check_result {
-        error!("CSV validation failed: {}", e);
-        std::process::exit(1);
-    }
-
-    let arr = check_result.unwrap();
-    info!("CSV successfully validated. {} entries found.", arr.len());
+    info!(
+        "CSV successfully validated. {} entries found.",
+        check_result.len()
+    );
 
     let mut music_arr = vec![];
 
-    for x in arr {
+    for x in check_result {
         let music: Result<Music, _> = x.clone().try_into();
         match music {
             Ok(m) => {
@@ -113,4 +106,6 @@ fn main() {
     for i in music_process_arr {
         process_music(i, &env_conf);
     }
+
+    Ok(())
 }

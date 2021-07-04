@@ -1,3 +1,4 @@
+use anyhow::{anyhow, ensure, Result};
 use std::fs::File;
 use std::path::PathBuf;
 use std::str::FromStr;
@@ -6,9 +7,7 @@ use structopt::StructOpt;
 use suimu::utils::{check_csv, check_logic};
 use suimu::Platform;
 
-extern crate pretty_env_logger;
-#[macro_use]
-extern crate log;
+use log::{info, warn};
 
 #[derive(StructOpt)]
 #[structopt(
@@ -29,7 +28,7 @@ struct Opt {
     format_only: bool,
 }
 
-fn main() {
+fn main() -> Result<()> {
     // Set default logging level to INFO
     if std::env::var("RUST_LOG").is_err() {
         std::env::set_var("RUST_LOG", "info");
@@ -41,29 +40,24 @@ fn main() {
     let csv_file: PathBuf = opts.csv_file;
     info!("CSV file: {:?}", csv_file);
 
-    if !csv_file.exists() {
-        error!("Cannot open CSV file.");
-        std::process::exit(2);
-    }
+    ensure!(csv_file.exists(), format!("{:?} does not exists", csv_file));
 
     let read_file = File::open(csv_file).unwrap();
-    let check_result = check_csv(&read_file);
+    let check_result =
+        check_csv(&read_file).map_err(|e| anyhow!(format!("CSV validation failed: {}", e)))?;
 
-    if let Err(e) = check_result {
-        error!("CSV validation failed: {}", e);
-        std::process::exit(1);
-    }
-
-    let arr = check_result.unwrap();
-    info!("CSV successfully validated. {} entries found.", arr.len());
+    info!(
+        "CSV successfully validated. {} entries found.",
+        check_result.len()
+    );
 
     if opts.format_only {
-        return;
+        return Ok(());
     }
 
     // Logic analysis
     info!("Checking entry logic...");
-    for x in &arr {
+    for x in &check_result {
         if let Err(v) = check_logic(x) {
             warn!("{}: {}", x, v);
         }
@@ -71,7 +65,7 @@ fn main() {
 
     // Support analysis
     info!("Checking entry support...");
-    for x in &arr {
+    for x in &check_result {
         if x.video_type.is_empty() {
             warn!("{}: Empty video_type", x);
             continue;
@@ -82,4 +76,6 @@ fn main() {
     }
 
     info!("Check finished.");
+
+    Ok(())
 }
