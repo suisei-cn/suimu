@@ -36,12 +36,13 @@ pub fn check_logic(x: &MaybeMusic) -> Result<()> {
         return Err(anyhow!("Only one of clip_start or clip_end exists"));
     }
 
-    ensure!(
-        x.clip_start.is_some()
-            && x.clip_end.is_some()
-            && (x.clip_start.unwrap() > x.clip_end.unwrap()),
-        "clip_start is later than clip_end"
-    );
+    // If clip start & end presents, make sure it's consistent
+    if x.clip_start.is_some() && x.clip_end.is_some() {
+        ensure!(
+            (x.clip_start.unwrap() < x.clip_end.unwrap()),
+            "clip_start is later than clip_end"
+        )
+    }
 
     Ok(())
 }
