@@ -42,7 +42,9 @@ fn main() {
 
     // --csv-file, readable & parsable
     let csv_file: PathBuf = opts.csv_file;
-    info!("CSV file: {:?}", csv_file);
+    debug!("CSV file: {:?}", csv_file);
+    debug!("Output path: {:?}", opts.output_dir);
+    debug!("Source path: {:?}", opts.source_dir);
 
     if !csv_file.exists() {
         error!("Cannot open CSV file.");
