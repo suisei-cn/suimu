@@ -1,8 +1,9 @@
 use serde::Deserialize;
-use std::fmt::{Display, Formatter, Result};
+use std::fmt::Result as FmtResult;
+use std::fmt::{Display, Formatter};
 
 #[derive(Debug, Deserialize)]
-pub struct Music {
+pub struct MaybeMusic {
     pub datetime: String,
     pub video_type: String,
     pub video_id: String,
@@ -15,10 +16,8 @@ pub struct Music {
     pub comment: String,
 }
 
-pub const PLATFORM_SUPPORTED: [&str; 4] = ["TWITTER", "BILIBILI", "YOUTUBE", ""];
-
-impl Display for Music {
-    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+impl Display for MaybeMusic {
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
         let video_fmtid = if self.video_type.is_empty() {
             format!("paid, {}", self.datetime)
         } else {

@@ -1,5 +1,5 @@
-mod check_csv;
+pub mod check_csv;
 
-pub use check_csv::check_csv;
-pub use check_csv::types::Music;
-pub use check_csv::types::PLATFORM_SUPPORTED;
+pub use check_csv::MaybeMusic;
+pub use check_csv::Music;
+pub use check_csv::PLATFORM_SUPPORTED;

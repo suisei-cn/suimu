@@ -2,8 +2,9 @@ use std::fs::File;
 use std::path::PathBuf;
 use structopt::clap;
 use structopt::StructOpt;
-use suimu::Music;
-use suimu::{check_csv, PLATFORM_SUPPORTED};
+use suimu::check_csv::{check_csv, check_logic};
+use suimu::MaybeMusic;
+use suimu::PLATFORM_SUPPORTED;
 
 extern crate pretty_env_logger;
 #[macro_use]
@@ -28,22 +29,9 @@ struct Opt {
     format_only: bool,
 }
 
-fn check_support(x: &Music) -> Result<(), &str> {
+fn check_support(x: &MaybeMusic) -> Result<(), &str> {
     if !PLATFORM_SUPPORTED.contains(&&*x.video_type) {
         return Err("Platform not supported");
-    }
-    Ok(())
-}
-
-fn check_logic(x: &Music) -> Result<(), &str> {
-    // clip_start & clip_end existence
-    if x.clip_start.is_none() ^ x.clip_end.is_none() {
-        return Err("Only one of clip_start or clip_end exists");
-    }
-
-    if x.clip_start.is_some() & x.clip_end.is_some() & (x.clip_start.unwrap() > x.clip_end.unwrap())
-    {
-        return Err("clip_start is later than clip_end");
     }
     Ok(())
 }
