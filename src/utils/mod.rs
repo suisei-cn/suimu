@@ -4,13 +4,14 @@ mod process_music;
 
 use csv::{Error, Reader};
 use std::io::Read;
+
 use strum_macros;
 
 pub use maybemusic::MaybeMusic;
 pub use music::Music;
-pub use process_music::process_music;
+pub use process_music::{process_music, EnvConf};
 
-#[derive(Debug, PartialEq, strum_macros::EnumString)]
+#[derive(Debug, Eq, Hash, PartialEq, strum_macros::AsRefStr, strum_macros::EnumString)]
 pub enum Platform {
     #[strum(serialize = "TWITTER")]
     Twitter,

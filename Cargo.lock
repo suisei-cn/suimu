@@ -448,6 +448,7 @@ dependencies = [
  "cargo-husky",
  "chrono",
  "csv",
+ "lazy_static",
  "log",
  "pretty_env_logger",
  "serde",

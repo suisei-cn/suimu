@@ -2,6 +2,8 @@ use crate::{MaybeMusic, Platform};
 use anyhow::{anyhow, Error, Result};
 use chrono::{DateTime, FixedOffset};
 use std::convert::TryFrom;
+use std::fmt::Result as FmtResult;
+use std::fmt::{Display, Formatter};
 use std::hash::Hasher;
 use std::str::FromStr;
 use twox_hash::XxHash64;
@@ -9,7 +11,7 @@ use twox_hash::XxHash64;
 #[derive(Debug)]
 pub struct Music {
     pub datetime: DateTime<FixedOffset>,
-    pub video_type: String,
+    pub video_type: Platform,
     pub video_id: String,
     pub clip_start: Option<f32>,
     pub clip_end: Option<f32>,
@@ -43,7 +45,7 @@ impl Music {
         // https://github.com/suisei-cn/suisei-music/blob/6b5767b58eee61cf2bcdf2be60ac9e06c773809d/tools/mod.py#L28
         let mut hasher = XxHash64::with_seed(0x9f88f860);
 
-        hasher.write(self.video_type.as_bytes());
+        hasher.write(self.video_type.as_ref().as_bytes());
         hasher.write(self.video_id.as_bytes());
         hasher.write(to_string(self.clip_start).as_bytes());
         hasher.write(to_string(self.clip_end).as_bytes());
@@ -61,10 +63,10 @@ impl TryFrom<MaybeMusic> for Music {
     fn try_from(v: MaybeMusic) -> Result<Music> {
         let datetime = parse_time(&v.datetime)?;
         let status = v.status.ok_or_else(|| anyhow!("No status present"))?;
-        let video_type = v.video_type.trim();
+        let video_type = Platform::from_str(v.video_type.trim());
         let title = v.title.trim();
 
-        if Platform::from_str(video_type).is_err() {
+        if video_type.is_err() {
             return Err(anyhow!("Platform not supported"));
         }
 
@@ -75,7 +77,7 @@ impl TryFrom<MaybeMusic> for Music {
         Ok(Music {
             datetime,
             status,
-            video_type: video_type.to_string(),
+            video_type: video_type.unwrap(),
             video_id: v.video_id.trim().to_string(),
             clip_start: v.clip_start,
             clip_end: v.clip_end,
@@ -96,7 +98,7 @@ mod tests {
         assert_eq!(
             (Music {
                 datetime: DateTime::parse_from_rfc3339("2021-06-25T22:30:00+09:00").unwrap(),
-                video_type: "YOUTUBE".to_string(),
+                video_type: Platform::YouTube,
                 video_id: "ZfDYRy17CBY".to_string(),
                 clip_start: None,
                 clip_end: None,
@@ -113,7 +115,7 @@ mod tests {
         assert_eq!(
             (Music {
                 datetime: DateTime::parse_from_rfc3339("2020-03-22T20:00:00+09:00").unwrap(),
-                video_type: "YOUTUBE".to_string(),
+                video_type: Platform::YouTube,
                 video_id: "vQHVGXdcqEQ".to_string(),
                 clip_start: None,
                 clip_end: None,
@@ -126,5 +128,18 @@ mod tests {
             .hash(),
             "4db7f3845af9cce9"
         );
+    }
+}
+
+impl Display for Music {
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
+        let video_fmtid = format!("{}/{}", self.video_type.as_ref(), self.video_id);
+        if self.title.is_empty() {
+            return write!(f, "Untitled ({})", video_fmtid);
+        }
+        if self.artist.is_empty() {
+            return write!(f, "{} ({})", self.title, video_fmtid);
+        }
+        write!(f, "{} - {} ({})", self.artist, self.title, video_fmtid)
     }
 }
