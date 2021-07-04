@@ -25,6 +25,9 @@ struct Opt {
 
     #[structopt(short, long, about = "Source directory", required = true)]
     source_dir: PathBuf,
+
+    #[structopt(short, long, about = "Don't process musics")]
+    dry_run: bool,
 }
 
 fn main() {
@@ -87,6 +90,10 @@ fn main() {
         .collect();
 
     info!("{} entries to process.", music_process_arr.len());
+
+    if opts.dry_run {
+        info!("Dry run: music processing is skipped.");
+    }
 
     for i in music_process_arr {
         process_music(i);
