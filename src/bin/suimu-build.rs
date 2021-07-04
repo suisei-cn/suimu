@@ -3,7 +3,7 @@ use std::fs::File;
 use std::path::PathBuf;
 use structopt::clap;
 use structopt::StructOpt;
-use suimu::utils::check_csv;
+use suimu::utils::{check_csv, process_music};
 use suimu::Music;
 
 extern crate pretty_env_logger;
@@ -25,9 +25,6 @@ struct Opt {
 
     #[structopt(short, long, about = "Source directory", required = true)]
     source_dir: PathBuf,
-
-    #[structopt(short, long, about = "Do without confirmation")]
-    no_confirm: bool,
 }
 
 fn main() {
@@ -76,5 +73,22 @@ fn main() {
         }
     }
 
+    let output_dir = opts.output_dir;
+
     info!("{} valid entries found.", music_arr.len());
+
+    let music_process_arr: Vec<Music> = music_arr
+        .into_iter()
+        .filter(|x| {
+            let mut dir: PathBuf = output_dir.clone();
+            dir.push(format!("{}.m4a", x.hash()));
+            !dir.exists()
+        })
+        .collect();
+
+    info!("{} entries to process.", music_process_arr.len());
+
+    for i in music_process_arr {
+        process_music(i);
+    }
 }

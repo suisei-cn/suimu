@@ -1,11 +1,13 @@
 mod maybemusic;
 mod music;
+mod process_music;
 
 use csv::{Error, Reader};
 use std::io::Read;
 
 pub use maybemusic::MaybeMusic;
 pub use music::Music;
+pub use process_music::process_music;
 
 pub const PLATFORM_SUPPORTED: [&str; 4] = ["TWITTER", "BILIBILI", "YOUTUBE", ""];
 
