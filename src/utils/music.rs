@@ -2,6 +2,8 @@ use crate::{MaybeMusic, PLATFORM_SUPPORTED};
 use anyhow::{anyhow, Error, Result};
 use chrono::{DateTime, FixedOffset};
 use std::convert::TryFrom;
+use std::hash::Hasher;
+use twox_hash::XxHash64;
 
 #[derive(Debug)]
 pub struct Music {
@@ -26,6 +28,30 @@ fn parse_time(time: &str) -> Result<DateTime<FixedOffset>, Error> {
         return Ok(v);
     }
     Err(anyhow!("Invalid datetime"))
+}
+
+fn to_string(x: Option<f32>) -> String {
+    match x {
+        None => "".to_string(),
+        Some(v) => v.to_string(),
+    }
+}
+
+impl Music {
+    pub fn hash(&self) -> String {
+        // https://github.com/suisei-cn/suisei-music/blob/6b5767b58eee61cf2bcdf2be60ac9e06c773809d/tools/mod.py#L28
+        let mut hasher = XxHash64::with_seed(0x9f88f860);
+
+        hasher.write(self.video_type.as_bytes());
+        hasher.write(self.video_id.as_bytes());
+        hasher.write(to_string(self.clip_start).as_bytes());
+        hasher.write(to_string(self.clip_end).as_bytes());
+        hasher.write(self.title.as_bytes());
+        hasher.write(self.artist.as_bytes());
+        hasher.write(self.performer.as_bytes());
+
+        format!("{:016x}", hasher.finish())
+    }
 }
 
 impl TryFrom<MaybeMusic> for Music {
@@ -57,5 +83,47 @@ impl TryFrom<MaybeMusic> for Music {
             performer: v.performer.trim().to_string(),
             comment: v.comment,
         })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_hash_compat() {
+        assert_eq!(
+            (Music {
+                datetime: DateTime::parse_from_rfc3339("2021-06-25T22:30:00+09:00").unwrap(),
+                video_type: "YOUTUBE".to_string(),
+                video_id: "ZfDYRy17CBY".to_string(),
+                clip_start: None,
+                clip_end: None,
+                status: 0,
+                title: "Bluerose".to_string(),
+                artist: "星街すいせい".to_string(),
+                performer: "星街すいせい".to_string(),
+                comment: "".to_string(),
+            })
+            .hash(),
+            "0c2b9da9cfe08c9e"
+        );
+
+        assert_eq!(
+            (Music {
+                datetime: DateTime::parse_from_rfc3339("2020-03-22T20:00:00+09:00").unwrap(),
+                video_type: "YOUTUBE".to_string(),
+                video_id: "vQHVGXdcqEQ".to_string(),
+                clip_start: None,
+                clip_end: None,
+                status: 0,
+                title: "NEXT COLOR PLANET".to_string(),
+                artist: "星街すいせい".to_string(),
+                performer: "星街すいせい".to_string(),
+                comment: "".to_string(),
+            })
+            .hash(),
+            "4db7f3845af9cce9"
+        );
     }
 }
