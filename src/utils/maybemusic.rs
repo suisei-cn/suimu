@@ -2,7 +2,7 @@ use serde::Deserialize;
 use std::fmt::Result as FmtResult;
 use std::fmt::{Display, Formatter};
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct MaybeMusic {
     pub datetime: String,
     pub video_type: String,

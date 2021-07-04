@@ -34,3 +34,59 @@ pub fn check_logic(x: &MaybeMusic) -> Result<(), &str> {
     }
     Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn return_sample_maybe_music() -> MaybeMusic {
+        MaybeMusic {
+            datetime: "2020-03-22T00:00:00+09:00".to_string(),
+            video_type: "".to_string(),
+            video_id: "".to_string(),
+            clip_start: None,
+            clip_end: None,
+            status: None,
+            title: "".to_string(),
+            artist: "".to_string(),
+            performer: "".to_string(),
+            comment: "".to_string(),
+        }
+    }
+
+    #[test]
+    fn test_check_logic() {
+        let sample_mm = return_sample_maybe_music();
+
+        assert_eq!(check_logic(&sample_mm).is_ok(), true);
+
+        assert_eq!(
+            check_logic(&MaybeMusic {
+                clip_start: Some(1.1),
+                ..sample_mm.clone()
+            })
+            .is_ok(),
+            false
+        );
+
+        assert_eq!(
+            check_logic(&MaybeMusic {
+                clip_start: Some(3.1),
+                clip_end: Some(2.2),
+                ..sample_mm.clone()
+            })
+            .is_ok(),
+            false
+        );
+
+        assert_eq!(
+            check_logic(&MaybeMusic {
+                clip_start: Some(1.1),
+                clip_end: Some(2.2),
+                ..sample_mm.clone()
+            })
+            .is_ok(),
+            true
+        );
+    }
+}
