@@ -1,3 +1,4 @@
+use chrono::Local;
 use serde::Deserialize;
 use std::fmt::Result as FmtResult;
 use std::fmt::{Display, Formatter};
@@ -30,5 +31,22 @@ impl Display for MaybeMusic {
             return write!(f, "{} ({})", self.title, video_fmtid);
         }
         write!(f, "{} - {} ({})", self.artist, self.title, video_fmtid)
+    }
+}
+
+impl Default for MaybeMusic {
+    fn default() -> Self {
+        MaybeMusic {
+            datetime: Local::now().to_rfc3339(),
+            video_type: String::new(),
+            video_id: String::new(),
+            clip_start: None,
+            clip_end: None,
+            status: None,
+            title: String::new(),
+            artist: String::new(),
+            performer: String::new(),
+            comment: String::new(),
+        }
     }
 }
