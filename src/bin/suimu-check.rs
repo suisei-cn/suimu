@@ -1,28 +1,30 @@
-use clap::Clap;
 use suimu::Music;
 use suimu::{check_csv, PLATFORM_SUPPORTED};
 use std::fs::File;
+use std::path::PathBuf;
+use structopt::StructOpt;
+use structopt::clap;
 
 extern crate pretty_env_logger;
 #[macro_use]
 extern crate log;
 
-#[derive(Clap)]
-#[clap(
+#[derive(StructOpt)]
+#[structopt(
 version = clap::crate_version ! (),
 author = clap::crate_authors ! (),
 about = clap::crate_description ! ()
 )]
-struct Opts {
-    #[clap(
-        about = "The CSV file to check",
-        default_value = "suisei-music.csv",
-        index = 1,
-        required = true
+struct Opt {
+    #[structopt(
+    about = "The CSV file to check",
+    default_value = "suisei-music.csv",
+    index = 1,
+    required = true
     )]
-    csv_file: String,
+    csv_file: PathBuf,
 
-    #[clap(short, long, about = "Only check formats")]
+    #[structopt(short, long, about = "Only check formats")]
     format_only: bool,
 }
 
@@ -55,19 +57,16 @@ fn main() {
     pretty_env_logger::init();
 
     // Parse arguments
-    let opts: Opts = Opts::parse();
-    let csv_file = opts.csv_file;
-    info!("CSV file: {}", csv_file);
+    let opts = Opt::from_args();
+    let csv_file: PathBuf = opts.csv_file;
+    info!("CSV file: {:?}", csv_file);
 
-    let read_file = File::open(csv_file);
-
-    if read_file.is_err() {
+    if !csv_file.exists() {
         error!("Cannot open CSV file.");
         std::process::exit(2);
     }
 
-    let read_file = read_file.unwrap();
-
+    let read_file = File::open(csv_file).unwrap();
     let check_result = check_csv(&read_file);
 
     if let Err(e) = check_result {
