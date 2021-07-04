@@ -55,6 +55,28 @@ mod tests {
     }
 
     #[test]
+    fn test_check_csv() {
+        let ret1 = check_csv(
+            "datetime,video_type,video_id,clip_start,clip_end,status,title,artist,performer,comment
+2018-03-27T20:54+09:00,TWITTER,978601113791299585,,,0,Starduster,ジミーサムP,星街すいせい,"
+                .as_bytes(),
+        );
+
+        assert_eq!(ret1.is_ok(), true);
+        assert_eq!(ret1.unwrap().len(), 1);
+
+        assert_eq!(
+            check_csv(
+                "video_type,video_id,clip_start,clip_end,status,title,artist,performer,comment
+TWITTER,978601113791299585,,,0,Starduster,ジミーサムP,星街すいせい,"
+                    .as_bytes()
+            )
+            .is_ok(),
+            false
+        );
+    }
+
+    #[test]
     fn test_check_logic() {
         let sample_mm = return_sample_maybe_music();
 
