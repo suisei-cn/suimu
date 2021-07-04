@@ -2,7 +2,7 @@ use std::fs::File;
 use std::path::PathBuf;
 use structopt::clap;
 use structopt::StructOpt;
-use suimu::check_csv::{check_csv, check_logic};
+use suimu::utils::{check_csv, check_logic};
 use suimu::MaybeMusic;
 use suimu::PLATFORM_SUPPORTED;
 
