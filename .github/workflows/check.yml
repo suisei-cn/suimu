@@ -1,9 +1,9 @@
-name: Check
+name: Cargo check
 on:
   - push
   - pull_request
 jobs:
-  build:
+  cargo_check:
     strategy:
       matrix:
         os: [ ubuntu-latest, macos-latest ]

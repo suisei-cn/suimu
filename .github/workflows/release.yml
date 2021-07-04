@@ -2,7 +2,8 @@ name: Release
 on:
   - push
 jobs:
-  build:
+  release:
+    name: Release
     strategy:
       matrix:
         os: [ ubuntu-latest, macos-latest ]
