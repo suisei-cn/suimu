@@ -4,7 +4,7 @@ use std::str::FromStr;
 use structopt::clap;
 use structopt::StructOpt;
 use suimu::utils::{check_csv, check_logic};
-use suimu::PlatformSupported;
+use suimu::Platform;
 
 extern crate pretty_env_logger;
 #[macro_use]
@@ -72,7 +72,11 @@ fn main() {
     // Support analysis
     info!("Checking entry support...");
     for x in &arr {
-        if let Err(v) = PlatformSupported::from_str(&x.video_type) {
+        if x.video_type.is_empty() {
+            warn!("{}: Empty video_type", x);
+            continue;
+        }
+        if let Err(v) = Platform::from_str(&x.video_type) {
             warn!("{}: {}", x, v);
         }
     }

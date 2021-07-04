@@ -1,4 +1,4 @@
-use crate::{MaybeMusic, PlatformSupported};
+use crate::{MaybeMusic, Platform};
 use anyhow::{anyhow, Error, Result};
 use chrono::{DateTime, FixedOffset};
 use std::convert::TryFrom;
@@ -64,7 +64,7 @@ impl TryFrom<MaybeMusic> for Music {
         let video_type = v.video_type.trim();
         let title = v.title.trim();
 
-        if PlatformSupported::from_str(video_type).is_err() {
+        if Platform::from_str(video_type).is_err() {
             return Err(anyhow!("Platform not supported"));
         }
 

@@ -11,7 +11,7 @@ pub use music::Music;
 pub use process_music::process_music;
 
 #[derive(Debug, PartialEq, strum_macros::EnumString)]
-pub enum PlatformSupported {
+pub enum Platform {
     #[strum(serialize = "TWITTER")]
     Twitter,
     #[strum(serialize = "BILIBILI")]
