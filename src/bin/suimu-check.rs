@@ -1,9 +1,9 @@
-use suimu::Music;
-use suimu::{check_csv, PLATFORM_SUPPORTED};
 use std::fs::File;
 use std::path::PathBuf;
-use structopt::StructOpt;
 use structopt::clap;
+use structopt::StructOpt;
+use suimu::Music;
+use suimu::{check_csv, PLATFORM_SUPPORTED};
 
 extern crate pretty_env_logger;
 #[macro_use]
@@ -17,10 +17,10 @@ about = clap::crate_description ! ()
 )]
 struct Opt {
     #[structopt(
-    about = "The CSV file to check",
-    default_value = "suisei-music.csv",
-    index = 1,
-    required = true
+        about = "The CSV file to check",
+        default_value = "suisei-music.csv",
+        index = 1,
+        required = true
     )]
     csv_file: PathBuf,
 
@@ -32,21 +32,20 @@ fn check_support(x: &Music) -> Result<(), &str> {
     if !PLATFORM_SUPPORTED.contains(&&*x.video_type) {
         return Err("Platform not supported");
     }
-    return Ok(());
+    Ok(())
 }
 
 fn check_logic(x: &Music) -> Result<(), &str> {
     // clip_start & clip_end existence
-    if x.clip_start.is_none() ^ x.clip_end.is_none() == true {
+    if x.clip_start.is_none() ^ x.clip_end.is_none() {
         return Err("Only one of clip_start or clip_end exists");
     }
 
-    if x.clip_start.is_some() & x.clip_end.is_some() {
-        if x.clip_start.unwrap() > x.clip_end.unwrap() {
-            return Err("clip_start is later than clip_end");
-        }
+    if x.clip_start.is_some() & x.clip_end.is_some() & (x.clip_start.unwrap() > x.clip_end.unwrap())
+    {
+        return Err("clip_start is later than clip_end");
     }
-    return Ok(());
+    Ok(())
 }
 
 fn main() {
