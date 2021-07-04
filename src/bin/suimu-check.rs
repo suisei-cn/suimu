@@ -96,4 +96,6 @@ fn main() {
             warn!("{}: {}", x, v);
         }
     }
+
+    info!("Check finished.");
 }
