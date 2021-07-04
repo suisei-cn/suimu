@@ -29,6 +29,7 @@ jobs:
           pushd target/release
           rm suimu-*.d
           mv suimu-check suimu-check-${{ runner.os }}
+          mv suimu-build suimu-build-${{ runner.os }}
           popd
 
       - name: Release
