@@ -1,5 +1,5 @@
 use crate::{MaybeMusic, Platform};
-use anyhow::{anyhow, Error, Result};
+use anyhow::{anyhow, bail, Result};
 use chrono::{DateTime, FixedOffset};
 use std::convert::TryFrom;
 use std::fmt::Result as FmtResult;
@@ -22,22 +22,14 @@ pub struct Music {
     pub comment: String,
 }
 
-fn parse_time(time: &str) -> Result<DateTime<FixedOffset>, Error> {
-    if let Ok(v) = chrono::DateTime::parse_from_rfc3339(time) {
-        return Ok(v);
-    }
-    // for back-compat reasons...
-    if let Ok(v) = chrono::DateTime::parse_from_str(time, "%Y-%m-%dT%H:%M%z") {
-        return Ok(v);
-    }
-    Err(anyhow!("Invalid datetime"))
+fn parse_time(time: &str) -> Result<DateTime<FixedOffset>> {
+    DateTime::parse_from_rfc3339(time)
+        .or_else(|_| DateTime::parse_from_str(time, "%Y-%m-%dT%H:%M%z"))
+        .or_else(|_| bail!("Error parsing time"))
 }
 
 fn to_string(x: Option<f32>) -> String {
-    match x {
-        None => "".to_string(),
-        Some(v) => v.to_string(),
-    }
+    x.map_or(String::new(), |x| x.to_string())
 }
 
 impl Music {
@@ -63,12 +55,10 @@ impl TryFrom<MaybeMusic> for Music {
     fn try_from(v: MaybeMusic) -> Result<Music> {
         let datetime = parse_time(&v.datetime)?;
         let status = v.status.ok_or_else(|| anyhow!("No status present"))?;
-        let video_type = Platform::from_str(v.video_type.trim());
-        let title = v.title.trim();
+        let video_type = Platform::from_str(v.video_type.trim())
+            .map_err(|_| anyhow!("Platform not supported"))?;
 
-        if video_type.is_err() {
-            return Err(anyhow!("Platform not supported"));
-        }
+        let title = v.title.trim();
 
         if title.is_empty() {
             return Err(anyhow!("Title is empty"));
@@ -77,7 +67,7 @@ impl TryFrom<MaybeMusic> for Music {
         Ok(Music {
             datetime,
             status,
-            video_type: video_type.unwrap(),
+            video_type,
             video_id: v.video_id.trim().to_string(),
             clip_start: v.clip_start,
             clip_end: v.clip_end,
