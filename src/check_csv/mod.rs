@@ -2,9 +2,10 @@ pub mod types;
 
 use crate::Music;
 use csv::Reader;
+use std::io::Read;
 
-pub fn check_csv(text: &str) -> Result<Vec<Music>, String> {
-    let mut reader = Reader::from_reader(text.as_bytes());
+pub fn check_csv(source: impl Read) -> Result<Vec<Music>, String> {
+    let mut reader = Reader::from_reader(source);
     let mut ret = vec![];
 
     for result in reader.deserialize() {

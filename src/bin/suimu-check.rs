@@ -1,6 +1,7 @@
 use clap::Clap;
 use suimu::Music;
 use suimu::{check_csv, PLATFORM_SUPPORTED};
+use std::fs::File;
 
 extern crate pretty_env_logger;
 #[macro_use]
@@ -58,7 +59,7 @@ fn main() {
     let csv_file = opts.csv_file;
     info!("CSV file: {}", csv_file);
 
-    let read_file = std::fs::read_to_string(csv_file);
+    let read_file = File::open(csv_file);
 
     if read_file.is_err() {
         error!("Cannot open CSV file.");
