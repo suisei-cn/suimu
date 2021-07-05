@@ -31,11 +31,6 @@ pub fn check_csv(source: impl Read) -> Result<Vec<MaybeMusic>> {
 }
 
 pub fn check_logic(x: &MaybeMusic) -> Result<()> {
-    // clip_start & clip_end existence
-    if x.clip_start.is_none() ^ x.clip_end.is_none() {
-        return Err(anyhow!("Only one of clip_start or clip_end exists"));
-    }
-
     // If clip start & end presents, make sure it's consistent
     if x.clip_start.is_some() && x.clip_end.is_some() {
         ensure!(
@@ -100,7 +95,7 @@ TWITTER,978601113791299585,,,0,Starduster,ジミーサムP,星街すいせい,"
                 ..sample_mm.clone()
             })
             .is_ok(),
-            false
+            true
         );
 
         assert_eq!(
