@@ -46,21 +46,6 @@ pub fn check_logic(x: &MaybeMusic) -> Result<()> {
 mod tests {
     use super::*;
 
-    fn return_sample_maybe_music() -> MaybeMusic {
-        MaybeMusic {
-            datetime: "2020-03-22T00:00:00+09:00".to_string(),
-            video_type: "".to_string(),
-            video_id: "".to_string(),
-            clip_start: None,
-            clip_end: None,
-            status: None,
-            title: "".to_string(),
-            artist: "".to_string(),
-            performer: "".to_string(),
-            comment: "".to_string(),
-        }
-    }
-
     #[test]
     fn test_check_csv() {
         let ret1 = check_csv(
@@ -69,53 +54,39 @@ mod tests {
                 .as_bytes(),
         );
 
-        assert_eq!(ret1.is_ok(), true);
+        assert!(ret1.is_ok());
         assert_eq!(ret1.unwrap().len(), 1);
 
-        assert_eq!(
-            check_csv(
-                "video_type,video_id,clip_start,clip_end,status,title,artist,performer,comment
+        assert!(check_csv(
+            "video_type,video_id,clip_start,clip_end,status,title,artist,performer,comment
 TWITTER,978601113791299585,,,0,Starduster,ジミーサムP,星街すいせい,"
-                    .as_bytes()
-            )
-            .is_ok(),
-            false
-        );
+                .as_bytes()
+        )
+        .is_err());
     }
 
     #[test]
     fn test_check_logic() {
-        let sample_mm = return_sample_maybe_music();
+        assert!(check_logic(&MaybeMusic::default()).is_ok());
 
-        assert_eq!(check_logic(&sample_mm).is_ok(), true);
+        assert!(check_logic(&MaybeMusic {
+            clip_start: Some(1.1),
+            ..MaybeMusic::default()
+        })
+        .is_ok());
 
-        assert_eq!(
-            check_logic(&MaybeMusic {
-                clip_start: Some(1.1),
-                ..sample_mm.clone()
-            })
-            .is_ok(),
-            true
-        );
+        assert!(check_logic(&MaybeMusic {
+            clip_start: Some(3.1),
+            clip_end: Some(2.2),
+            ..MaybeMusic::default()
+        })
+        .is_err());
 
-        assert_eq!(
-            check_logic(&MaybeMusic {
-                clip_start: Some(3.1),
-                clip_end: Some(2.2),
-                ..sample_mm.clone()
-            })
-            .is_ok(),
-            false
-        );
-
-        assert_eq!(
-            check_logic(&MaybeMusic {
-                clip_start: Some(1.1),
-                clip_end: Some(2.2),
-                ..sample_mm.clone()
-            })
-            .is_ok(),
-            true
-        );
+        assert!(check_logic(&MaybeMusic {
+            clip_start: Some(1.1),
+            clip_end: Some(2.2),
+            ..MaybeMusic::default()
+        })
+        .is_ok());
     }
 }
