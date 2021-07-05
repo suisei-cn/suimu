@@ -61,21 +61,22 @@ fn main() -> Result<()> {
         check_result.len()
     );
 
-    let mut music_arr = vec![];
-
-    for x in check_result {
-        let music: Result<Music, _> = x.clone().try_into();
-        match music {
-            Ok(m) => {
-                music_arr.push(m);
-            }
-            Err(e) => {
-                if !x.video_id.is_empty() {
-                    warn!("Skipping music {}: {}", x, e.to_string());
+    let music_arr: Vec<Music> = check_result
+        .into_iter()
+        .filter_map(|x| {
+            let empty_video_id = x.video_id.is_empty();
+            let x_desc = &x.to_string();
+            match TryInto::<Music>::try_into(x) {
+                Ok(v) => Some(v),
+                Err(e) => {
+                    if !empty_video_id {
+                        warn!("Skipping music {}: {}", x_desc, e.to_string());
+                    }
+                    None
                 }
             }
-        }
-    }
+        })
+        .collect();
 
     let output_dir: PathBuf = opts.output_dir;
 
