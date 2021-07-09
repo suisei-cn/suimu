@@ -1,0 +1,22 @@
+[package]
+name = "suimu-tauri"
+version = "0.1.0"
+description = "Suisei-music Companion."
+license = "MIT"
+repository = "https://github.com/suisei-cn/suimu.git"
+edition = "2018"
+build = "src/build.rs"
+publish = false
+
+[build-dependencies]
+tauri-build = { version = "1.0.0-beta.2" }
+
+[dependencies]
+serde_json = "1.0"
+serde = { version = "1.0", features = ["derive"] }
+tauri = { version = "1.0.0-beta.4", features = ["dialog-all", "dialog-open"] }
+base64 = "0.13.0"
+
+[features]
+default = [ "custom-protocol" ]
+custom-protocol = [ "tauri/custom-protocol" ]

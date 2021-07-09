@@ -1,0 +1,13 @@
+{
+  "scripts": {
+    "dev": "tauri dev",
+    "tauri:format": "cd src-tauri && cargo fmt --all",
+    "tauri:clippy": "cd src-tauri && cargo clippy --all-features",
+    "web:format": "cd src-web && prettier --write .",
+    "web:build": "cd src-web && npm run build",
+    "web:dev": "cd src-web && npm run dev"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^1.0.0-beta.5"
+  }
+}
