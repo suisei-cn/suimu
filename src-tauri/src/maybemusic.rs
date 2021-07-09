@@ -1,9 +1,9 @@
 use chrono::Local;
-use serde::Deserialize;
+use serde::{Serialize, Deserialize};
 use std::fmt::Result as FmtResult;
 use std::fmt::{Display, Formatter};
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct MaybeMusic {
     pub datetime: String,
     pub video_type: String,

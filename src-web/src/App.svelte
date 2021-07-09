@@ -1,15 +1,23 @@
 <script lang="ts">
-    import { invoke, dialog } from '@tauri-apps/api'
+    import type {MaybeMusic} from "./types_rs";
 
-    let csvFilePath = "";
+    import {dialog} from '@tauri-apps/api';
+    import {get_maybemusic_by_csv_path} from "./invoke";
+
+    let csvMaybeMusic: MaybeMusic[] = [];
 
     function selectCsvFile() {
         dialog.open({
             multiple: false
-        }).then(x => {
-            csvFilePath = <string> x
-            console.log(`CSV file path: ${csvFilePath}`)
         })
+            .then(csvFilePath => get_maybemusic_by_csv_path(<string>csvFilePath))
+            .then(x => {
+                if (x.ok) {
+                    csvMaybeMusic = x.object;
+                } else {
+                    console.error(x.message);
+                }
+            })
     }
 </script>
 
@@ -20,6 +28,11 @@
         <button on:click={selectCsvFile}>
             Select CSV file
         </button>
+        {#if csvMaybeMusic.length}
+            <div>
+                {csvMaybeMusic.length} clips found.
+            </div>
+        {/if}
     </div>
 </main>
 
