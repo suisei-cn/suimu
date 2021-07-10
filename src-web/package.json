@@ -6,7 +6,8 @@
     "build": "rollup -c",
     "dev": "rollup -c -w",
     "check": "svelte-check --tsconfig ./tsconfig.json",
-    "format": "prettier --write --plugin-search-dir=. ."
+    "format": "prettier --write --plugin-search-dir=. .",
+    "format:check": "prettier --plugin-search-dir=. -c ."
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^17.0.0",
