@@ -1,0 +1,35 @@
+name: Check
+on:
+  - push
+  - pull_request
+jobs:
+  tauri_check:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+
+      - name: Setup toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+
+      - name: Run cargo check
+        run: |
+          cd src-tauri
+          cargo check
+
+  web_check:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+
+      - name: Build
+        run: |
+          cd src-web
+          npm install
+          npm run check
