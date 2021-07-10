@@ -10,6 +10,7 @@ jobs:
           toolchain: nightly
           components: clippy
           override: true
+      - run: cd src-tauri
 
       - uses: actions-rs/clippy-check@v1
         with:
