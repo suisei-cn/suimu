@@ -1,0 +1,22 @@
+name: Cargo test
+on:
+  - push
+  - pull_request
+jobs:
+  tauri_test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+
+      - name: Setup toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+
+      - run: cd src-tauri
+
+      - name: Run cargo test
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
