@@ -30,7 +30,7 @@ macro_rules! WrapCommand {
   ($src:ident ~= $dst:ident | $($nm:tt = $nn:ty),* | $ret:ty) => {
     #[tauri::command]
     pub fn $src($($nm: $nn)*) -> FEResult<$ret> {
-      $dst($($nm: $nn)*).into()
+      $dst($($nm: $nn),*).into()
     }
   };
 }
