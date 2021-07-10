@@ -28,6 +28,9 @@ impl<T: Serialize> From<anyhow::Result<T>> for FEResult<T> {
 #[macro_export]
 macro_rules! WrapCommand {
   ($src:ident ~= $dst:ident | $($nm:tt = $nn:ty),* | $ret:ty) => {
+
+    use crate::compat::FEResult;
+
     #[tauri::command]
     pub fn $src($($nm: $nn)*) -> FEResult<$ret> {
       $dst($($nm: $nn),*).into()
