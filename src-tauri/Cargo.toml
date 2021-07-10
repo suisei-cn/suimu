@@ -1,15 +1,15 @@
 [package]
-name = "suimu-tauri"
-version = "0.1.0"
-description = "Suisei-music Companion."
-license = "MIT"
-repository = "https://github.com/suisei-cn/suimu.git"
-edition = "2018"
 build = "src/build.rs"
+description = "Suisei-music Companion."
+edition = "2018"
+license = "MIT"
+name = "suimu-tauri"
 publish = false
+repository = "https://github.com/suisei-cn/suimu.git"
+version = "0.1.0"
 
 [build-dependencies]
-tauri-build = { version = "1.0.0-beta.2" }
+tauri-build = {version = "1.0.0-beta.2"}
 
 [dependencies]
 anyhow = "1.0.41"
@@ -18,13 +18,13 @@ csv = "1.1.6"
 lazy_static = "1.4.0"
 log = "0.4.14"
 pretty_env_logger = "0.4.0"
-serde = { version = "1.0.126", features = ["derive"] }
+serde = {version = "1.0.126", features = ["derive"]}
 serde_json = "1.0"
 strum = "0.21.0"
 strum_macros = "0.21.1"
+tauri = {version = "1.0.0-beta.4", features = ["dialog-all", "dialog-open"]}
 twox-hash = "1.6.0"
-tauri = { version = "1.0.0-beta.4", features = ["dialog-all", "dialog-open"] }
 
 [features]
-default = ["custom-protocol"]
 custom-protocol = ["tauri/custom-protocol"]
+default = ["custom-protocol"]

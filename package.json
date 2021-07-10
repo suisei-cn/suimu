@@ -3,7 +3,7 @@
     "dev": "tauri dev",
     "tauri:format": "cd src-tauri && cargo fmt --all",
     "tauri:clippy": "cd src-tauri && cargo clippy --all-features",
-    "web:format": "cd src-web && prettier --write .",
+    "web:format": "cd src-web && npm run format",
     "web:build": "cd src-web && npm run build",
     "web:dev": "cd src-web && npm run dev"
   },
