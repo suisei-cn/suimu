@@ -1,6 +1,6 @@
 use crate::maybemusic::MaybeMusic;
 use crate::process_music::Platform;
-use anyhow::{anyhow, bail, Result};
+use anyhow::{anyhow, bail, ensure, Result};
 use chrono::{DateTime, FixedOffset};
 use std::convert::TryFrom;
 use std::fmt::Result as FmtResult;
@@ -58,6 +58,13 @@ impl TryFrom<MaybeMusic> for Music {
     let status = v.status.ok_or_else(|| anyhow!("No status present"))?;
     let video_type =
       Platform::from_str(v.video_type.trim()).map_err(|_| anyhow!("Platform not supported"))?;
+
+    if v.clip_start.is_some() && v.clip_end.is_some() {
+      ensure!(
+        v.clip_start.unwrap() < v.clip_end.unwrap(),
+        anyhow!("clip_start is later than clip_end")
+      );
+    }
 
     let title = v.title.trim();
 

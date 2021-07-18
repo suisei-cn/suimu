@@ -7,7 +7,7 @@ use std::collections::HashMap;
 use std::path::PathBuf;
 use std::process::Command;
 
-pub struct PlatformSettings {
+struct PlatformSettings {
   url_template: &'static str,
   format: &'static str,
   source_ext: &'static str,
@@ -24,7 +24,7 @@ pub enum Platform {
 }
 
 lazy_static! {
-  pub static ref PLATFORM_INFO: HashMap<Platform, PlatformSettings> = {
+  static ref PLATFORM_INFO: HashMap<Platform, PlatformSettings> = {
     let mut m = HashMap::new();
     m.insert(
       Platform::YouTube,

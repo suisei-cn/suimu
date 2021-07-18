@@ -13,18 +13,6 @@ pub fn check_csv(source: impl Read) -> Result<Vec<MaybeMusic>> {
     .map_err(|err| anyhow!(err))
 }
 
-pub fn check_logic(x: &MaybeMusic) -> Result<()> {
-  // If clip start & end presents, make sure it's consistent
-  if x.clip_start.is_some() && x.clip_end.is_some() {
-    ensure!(
-      (x.clip_start.unwrap() < x.clip_end.unwrap()),
-      "clip_start is later than clip_end"
-    )
-  }
-
-  Ok(())
-}
-
 #[cfg(test)]
 mod tests {
   use super::*;
@@ -46,30 +34,5 @@ TWITTER,978601113791299585,,,0,Starduster,ジミーサムP,星街すいせい,"
         .as_bytes()
     )
     .is_err());
-  }
-
-  #[test]
-  fn test_check_logic() {
-    assert!(check_logic(&MaybeMusic::default()).is_ok());
-
-    assert!(check_logic(&MaybeMusic {
-      clip_start: Some(1.1),
-      ..MaybeMusic::default()
-    })
-    .is_ok());
-
-    assert!(check_logic(&MaybeMusic {
-      clip_start: Some(3.1),
-      clip_end: Some(2.2),
-      ..MaybeMusic::default()
-    })
-    .is_err());
-
-    assert!(check_logic(&MaybeMusic {
-      clip_start: Some(1.1),
-      clip_end: Some(2.2),
-      ..MaybeMusic::default()
-    })
-    .is_ok());
   }
 }
