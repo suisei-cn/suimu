@@ -1,7 +1,11 @@
 name: Check
 on:
-  - push
-  - pull_request
+  push:
+    branches:
+      - gui
+  pull_request:
+    branches:
+      - gui
 jobs:
   tauri_check:
     strategy:

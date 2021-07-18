@@ -1,7 +1,11 @@
 name: Cargo test
 on:
-  - push
-  - pull_request
+  push:
+    branches:
+      - gui
+  pull_request:
+    branches:
+      - gui
 jobs:
   tauri_test:
     runs-on: ubuntu-latest
