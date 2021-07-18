@@ -26,6 +26,9 @@ pub struct CheckOpt {
 
     #[structopt(short, long, about = "Only check formats")]
     format_only: bool,
+
+    #[structopt(long)]
+    json_output: bool,
 }
 
 pub fn check(opts: CheckOpt) -> Result<()> {
@@ -68,6 +71,11 @@ pub fn check(opts: CheckOpt) -> Result<()> {
     }
 
     info!("Check finished.");
+
+    if opts.json_output {
+        let base = serde_json::to_string(&check_result).unwrap();
+        println!("{}", base);
+    }
 
     Ok(())
 }
