@@ -1,7 +1,11 @@
 name: Cargo test
 on:
-  - push
-  - pull_request
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
 jobs:
   cargo_test:
     runs-on: ubuntu-latest
