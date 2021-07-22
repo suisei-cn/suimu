@@ -9,7 +9,7 @@ use structopt::StructOpt;
 
 use log::{debug, info, warn};
 
-#[derive(StructOpt)]
+#[derive(StructOpt, Debug, Clone)]
 #[structopt(
 version = clap::crate_version ! (),
 author = clap::crate_authors ! (),
@@ -33,6 +33,26 @@ pub struct BuildOpt {
 
     #[structopt(long, about = "youtube-dl executable", default_value = "youtube-dl")]
     ytdl: String,
+}
+
+impl BuildOpt {
+    pub fn new(
+        csv_file: PathBuf,
+        output_dir: PathBuf,
+        source_dir: PathBuf,
+        dry_run: bool,
+        ffmpeg: String,
+        ytdl: String,
+    ) -> Self {
+        Self {
+            csv_file,
+            output_dir,
+            source_dir,
+            dry_run,
+            ffmpeg,
+            ytdl,
+        }
+    }
 }
 
 pub fn build(opts: BuildOpt) -> Result<()> {

@@ -1,3 +1,4 @@
+mod interactive;
 mod maybemusic;
 mod music;
 mod process_music;
@@ -8,6 +9,7 @@ use std::io::Read;
 
 use strum_macros;
 
+pub use interactive::*;
 pub use maybemusic::MaybeMusic;
 pub use music::Music;
 pub use process_music::{process_music, EnvConf};
