@@ -1,11 +1,11 @@
+use crate::utils::{check_csv, check_logic};
+use crate::Platform;
 use anyhow::{anyhow, ensure, Result};
 use std::fs::File;
 use std::path::PathBuf;
 use std::str::FromStr;
 use structopt::clap;
 use structopt::StructOpt;
-use suimu::utils::{check_csv, check_logic};
-use suimu::Platform;
 
 use log::{info, warn};
 
@@ -13,9 +13,9 @@ use log::{info, warn};
 #[structopt(
 version = clap::crate_version ! (),
 author = clap::crate_authors ! (),
-about = clap::crate_description ! ()
+about = "Validate csv files"
 )]
-struct Opt {
+pub struct CheckOpt {
     #[structopt(
         about = "The CSV file to check",
         default_value = "suisei-music.csv",
@@ -28,15 +28,7 @@ struct Opt {
     format_only: bool,
 }
 
-fn main() -> Result<()> {
-    // Set default logging level to INFO
-    if std::env::var("RUST_LOG").is_err() {
-        std::env::set_var("RUST_LOG", "info");
-    }
-    pretty_env_logger::init();
-
-    // Parse arguments
-    let opts = Opt::from_args();
+pub fn check(opts: CheckOpt) -> Result<()> {
     let csv_file: PathBuf = opts.csv_file;
     info!("CSV file: {:?}", csv_file);
 

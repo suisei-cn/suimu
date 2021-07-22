@@ -20,14 +20,6 @@ strum = "0.21.0"
 strum_macros = "0.21.1"
 twox-hash = "1.6.0"
 
-[[bin]]
-name = "suimu-check"
-path = "src/bin/suimu-check.rs"
-
-[[bin]]
-name = "suimu-build"
-path = "src/bin/suimu-build.rs"
-
 [dev-dependencies.cargo-husky]
 version = "1"
 default-features = false

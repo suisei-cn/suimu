@@ -2,10 +2,23 @@
 
 Helper applications for [suisei-music](https://github.com/suisei-cn/suisei-music).
 
-### Binaries
+### Usage (Subcommand)
 
-* [suimu-check](https://github.com/suisei-cn/suimu/blob/master/src/bin/suimu-check.rs): Validate csv files
-* [suimu-build](https://github.com/suisei-cn/suimu/blob/master/src/bin/suimu-build.rs): Build library from csv files
+- `Build`
+
+  Build library from csv files
+
+  ```
+  suimu build -c /path/to/suisei_music.csv -o /path/to/output -s /path/to/source
+  ```
+
+- `Check`
+
+  Validate csv files
+
+  ```
+  suimu check /path/to/suisei_music.csv
+  ```
 
 ### License
 

@@ -1,11 +1,11 @@
+use crate::utils::{check_csv, process_music, EnvConf};
+use crate::Music;
 use anyhow::{ensure, Result};
 use std::convert::TryInto;
 use std::fs::File;
 use std::path::PathBuf;
 use structopt::clap;
 use structopt::StructOpt;
-use suimu::utils::{check_csv, process_music, EnvConf};
-use suimu::Music;
 
 use log::{debug, info, warn};
 
@@ -13,9 +13,9 @@ use log::{debug, info, warn};
 #[structopt(
 version = clap::crate_version ! (),
 author = clap::crate_authors ! (),
-about = clap::crate_description ! ()
+about = "Build library from csv files"
 )]
-struct Opt {
+pub struct BuildOpt {
     #[structopt(short, long, about = "CSV file path", required = true)]
     csv_file: PathBuf,
 
@@ -35,16 +35,7 @@ struct Opt {
     ytdl: String,
 }
 
-fn main() -> Result<()> {
-    // Set default logging level to INFO
-    if std::env::var("RUST_LOG").is_err() {
-        std::env::set_var("RUST_LOG", "info");
-    }
-    pretty_env_logger::init();
-
-    // Parse arguments
-    let opts = Opt::from_args();
-
+pub fn build(opts: BuildOpt) -> Result<()> {
     // --csv-file, readable & parsable
     let csv_file: PathBuf = opts.csv_file;
     debug!("CSV file: {:?}", csv_file);
