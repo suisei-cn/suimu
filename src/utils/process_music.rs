@@ -4,6 +4,8 @@ use std::collections::HashMap;
 use std::path::PathBuf;
 use std::process::Command;
 
+use lazy_static::lazy_static;
+
 pub struct PlatformSettings {
     url_template: &'static str,
     format: &'static str,
