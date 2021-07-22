@@ -13,6 +13,7 @@ about = clap::crate_description ! ()
 )]
 enum Suimu {
     Build(BuildOpt),
+    BuildInteractive,
     Check(CheckOpt),
 }
 
@@ -28,6 +29,7 @@ fn main() -> Result<()> {
     match opts {
         Suimu::Build(build_opt) => build(build_opt)?,
         Suimu::Check(check_opt) => check(check_opt)?,
+        Suimu::BuildInteractive => build_interactive()?,
     }
     Ok(())
 }
