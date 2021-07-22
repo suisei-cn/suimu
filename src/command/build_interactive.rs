@@ -72,7 +72,11 @@ fn get_path(mut path: PathBuf) -> Result<Vec<String>> {
 }
 
 fn autocomplete_path(current: String, _ans: &Answers) -> Completions<String> {
-    match get_path(PathBuf::from(current.clone())) {
+    match get_path(PathBuf::from(if current.is_empty() {
+        "./".to_owned()
+    } else {
+        current.clone()
+    })) {
         Ok(ret) if !ret.is_empty() => ret.into(),
         _ => Completions::from([current]),
     }
@@ -143,13 +147,14 @@ pub fn build_interactive() -> Result<()> {
     Ok(())
 }
 
-// #[test]
-// fn test_autocomplete() {
-//     requestty::prompt_one(
-//         Question::input("test")
-//             .message("Dir")
-//             .auto_complete(autocomplete_path)
-//             .build(),
-//     )
-//     .unwrap();
-// }
+#[test]
+#[ignore = "Need human input"]
+fn test_autocomplete() {
+    requestty::prompt_one(
+        Question::input("test")
+            .message("Dir")
+            .auto_complete(autocomplete_path)
+            .build(),
+    )
+    .unwrap();
+}
