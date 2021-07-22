@@ -13,7 +13,7 @@ use log::{info, warn};
 #[structopt(
 version = clap::crate_version ! (),
 author = clap::crate_authors ! (),
-about = clap::crate_description ! ()
+about = "Validate csv files"
 )]
 pub struct CheckOpt {
     #[structopt(

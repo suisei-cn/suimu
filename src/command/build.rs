@@ -13,7 +13,7 @@ use log::{debug, info, warn};
 #[structopt(
 version = clap::crate_version ! (),
 author = clap::crate_authors ! (),
-about = clap::crate_description ! ()
+about = "Build library from csv files"
 )]
 pub struct BuildOpt {
     #[structopt(short, long, about = "CSV file path", required = true)]
