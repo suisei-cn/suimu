@@ -19,6 +19,7 @@ structopt = "0.3.21"
 strum = "0.21.0"
 strum_macros = "0.21.1"
 twox-hash = "1.6.0"
+requestty = "0.1.1"
 
 [dev-dependencies.cargo-husky]
 version = "1"
