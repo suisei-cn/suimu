@@ -143,13 +143,13 @@ pub fn build_interactive() -> Result<()> {
     Ok(())
 }
 
-#[test]
-fn test_autocomplete() {
-    requestty::prompt_one(
-        Question::input("test")
-            .message("Dir")
-            .auto_complete(autocomplete_path)
-            .build(),
-    )
-    .unwrap();
-}
+// #[test]
+// fn test_autocomplete() {
+//     requestty::prompt_one(
+//         Question::input("test")
+//             .message("Dir")
+//             .auto_complete(autocomplete_path)
+//             .build(),
+//     )
+//     .unwrap();
+// }
