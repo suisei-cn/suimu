@@ -27,8 +27,8 @@ jobs:
       - name: Rename builds
         run: |
           pushd target/release
-          rm suimu-*.d
-          mv suimu-check suimu-${{ runner.os }}
+          rm suimu.d
+          mv suimu suimu-${{ runner.os }}
           popd
 
       - name: Release
