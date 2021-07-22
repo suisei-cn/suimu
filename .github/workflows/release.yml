@@ -6,7 +6,7 @@ jobs:
     name: Release
     strategy:
       matrix:
-        os: [ ubuntu-latest, macos-latest ]
+        os: [ubuntu-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     if: startsWith(github.ref, 'refs/tags/')
     steps:
@@ -28,8 +28,7 @@ jobs:
         run: |
           pushd target/release
           rm suimu-*.d
-          mv suimu-check suimu-check-${{ runner.os }}
-          mv suimu-build suimu-build-${{ runner.os }}
+          mv suimu-check suimu-${{ runner.os }}
           popd
 
       - name: Release
