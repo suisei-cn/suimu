@@ -95,6 +95,7 @@ fn main() -> Result<()> {
 
     if opts.dry_run {
         info!("Dry run: music processing is skipped.");
+        return Ok(());
     }
 
     let env_conf = EnvConf {
