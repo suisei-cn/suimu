@@ -1,18 +1,21 @@
-use std::path::PathBuf;
+use std::fs::read_dir;
+use std::path::{Path, PathBuf};
 
-use anyhow::Result;
-use log::info;
+use anyhow::{bail, Result};
+use log::debug;
+use requestty::question::Completions;
 use requestty::{Answer, Answers, Question};
 
-use crate::utils::FromInteractive;
+use crate::utils::{FromInteractive, IsHidden, Prefix};
 
 use crate::{build, get_answer, BuildOpt};
 
-fn path_exists(path: &str, _prev: &Answers) -> Result<(), String> {
-    if PathBuf::from(path).exists() {
+fn file_exists(raw_path: &str, _prev: &Answers) -> Result<(), String> {
+    let path = PathBuf::from(raw_path);
+    if path.is_file() {
         Ok(())
     } else {
-        Err(format!("{} does not exist", path))
+        Err(format!("{} does not exist or is not a file", raw_path))
     }
 }
 
@@ -23,15 +26,74 @@ fn is_advance_mode(prev: &Answers) -> bool {
     }
 }
 
+fn get_all_visible_children(path: &Path) -> Result<Vec<PathBuf>> {
+    Ok(read_dir(path)?
+        .filter_map(|entry| entry.ok())
+        .filter(|entry| !entry.is_hidden())
+        .map(|entry| entry.path())
+        .collect())
+}
+
+fn format_paths<T: Iterator<Item = PathBuf>>(paths: T) -> Vec<String> {
+    let mut ret = paths
+        .filter_map(|path| {
+            path.to_str().map(|x| {
+                if path.is_dir() {
+                    x.to_owned() + "/"
+                } else {
+                    x.to_owned()
+                }
+            })
+        })
+        .collect::<Vec<_>>();
+    ret.sort();
+    ret
+}
+
+fn get_path(mut path: PathBuf) -> Result<Vec<String>> {
+    if !path.is_absolute() {
+        path = path.canonicalize()?
+    }
+    if path.is_dir() {
+        let entries = get_all_visible_children(&path)?;
+        Ok(format_paths(entries.into_iter()))
+    } else if let Some(parent) = path.parent() {
+        let children = get_all_visible_children(&parent.to_owned())?
+            .into_iter()
+            .filter(|x| match (x.file_name(), path.file_name()) {
+                (Some(cur_name), Some(input_name)) => cur_name.starts_with(input_name),
+                (Some(_), None) => true,
+                _ => false,
+            });
+        Ok(format_paths(children))
+    } else {
+        bail!("{} does not have parent", path.display())
+    }
+}
+
+fn autocomplete_path(current: String, _ans: &Answers) -> Completions<String> {
+    match get_path(PathBuf::from(current.clone())) {
+        Ok(ret) if !ret.is_empty() => ret.into(),
+        _ => Completions::from([current]),
+    }
+}
+
 impl FromInteractive for BuildOpt {
     fn from_interactive() -> Result<Self> {
         let csv_file_question = Question::input("csv_file")
             .message("Path to CSV file")
             .default("./suisei-music.csv")
-            .validate(path_exists)
+            .auto_complete(autocomplete_path)
+            .validate(file_exists)
             .build();
-        let out_dir_question = Question::input("output_dir").message("Output path").build();
-        let src_dir_question = Question::input("source_dir").message("Source path").build();
+        let out_dir_question = Question::input("output_dir")
+            .message("Output path")
+            .auto_complete(autocomplete_path)
+            .build();
+        let src_dir_question = Question::input("source_dir")
+            .message("Source path")
+            .auto_complete(autocomplete_path)
+            .build();
         let extra_setting_question = Question::confirm("advance")
             .message("Advanced settings")
             .default(false)
@@ -60,7 +122,7 @@ impl FromInteractive for BuildOpt {
             ffmpeg_question,
             ytdl_question,
         ])?;
-        info!("Answers: {:#?}", answers);
+        debug!("Answers: {:#?}", answers);
 
         let opts = Self::new(
             get_answer!(answers, "csv_file").into(),
@@ -80,3 +142,14 @@ pub fn build_interactive() -> Result<()> {
     build(opts)?;
     Ok(())
 }
+
+// #[test]
+// fn test_autocomplete() {
+//     requestty::prompt_one(
+//         Question::input("test")
+//             .message("Dir")
+//             .auto_complete(autocomplete_path)
+//             .build(),
+//     )
+//     .unwrap();
+// }
