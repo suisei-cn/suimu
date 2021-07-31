@@ -6,23 +6,27 @@ license = "MIT"
 name = "suimu"
 repository = "https://github.com/suisei-cn/suimu.git"
 version = "0.3.0"
-
 [dependencies]
 anyhow = "1.0.41"
 chrono = "0.4.19"
 csv = "1.1.6"
 lazy_static = "1.4.0"
+levenshtein = "*"
 log = "0.4.14"
 pretty_env_logger = "0.4.0"
-serde = { version = "1.0.126", features = ["derive"] }
+requestty = "0.1.1"
 serde_json = "1.0.64"
 structopt = "0.3.21"
 strum = "0.21.0"
 strum_macros = "0.21.1"
 twox-hash = "1.6.0"
-requestty = "0.1.1"
 
+[dependencies.serde]
+features = ["derive"]
+version = "1.0.126"
+
+[dev-dependencies]
 [dev-dependencies.cargo-husky]
-version = "1"
 default-features = false
 features = ["precommit-hook", "run-cargo-clippy", "run-cargo-fmt"]
+version = "1"
