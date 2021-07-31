@@ -1,6 +1,7 @@
 use crate::utils::{check_csv, check_logic};
-use crate::Platform;
+use crate::{MaybeMusic, Platform};
 use anyhow::{anyhow, ensure, Result};
+use levenshtein::levenshtein;
 use std::fs::File;
 use std::path::PathBuf;
 use std::str::FromStr;
@@ -29,6 +30,34 @@ pub struct CheckOpt {
 
     #[structopt(long)]
     json_output: bool,
+}
+
+/// Return the Levenshtein ratio of two strings. SHall be a value between 0 and 1.
+fn similarity_ratio(a: &str, b: &str, len: usize) -> f32 {
+    1f32 - (levenshtein(a, b) as f32) / (len as f32)
+}
+
+fn similarity_check(field_name: &str, musics: &[MaybeMusic], picker: fn(&MaybeMusic) -> String) {
+    let contents: Vec<String> = musics.iter().map(picker).collect();
+    let chars_length: Vec<usize> = contents.iter().map(|x| x.chars().count()).collect();
+    for i in 0..contents.len() {
+        for j in i + 1..contents.len() {
+            if contents[i] == contents[j] {
+                continue;
+            }
+            let sim = similarity_ratio(
+                &contents[i],
+                &contents[j],
+                chars_length[i].max(chars_length[j]),
+            );
+            if sim > 0.75 {
+                warn!(
+                    "[{}] {} & {}: Similar titles ({})",
+                    field_name, contents[i], contents[j], sim
+                );
+            }
+        }
+    }
 }
 
 pub fn check(opts: CheckOpt) -> Result<()> {
@@ -82,6 +111,10 @@ pub fn check(opts: CheckOpt) -> Result<()> {
             continue;
         }
     }
+
+    info!("Check similar metadatas...");
+    similarity_check("Title", &check_result, |x| x.title.clone());
+    similarity_check("Artist", &check_result, |x| x.artist.clone());
 
     info!("Check finished.");
 
