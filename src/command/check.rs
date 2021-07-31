@@ -70,6 +70,19 @@ pub fn check(opts: CheckOpt) -> Result<()> {
         }
     }
 
+    // Potential typo analysis
+    info!("Checking potential typos...");
+    for x in &check_result {
+        if x.title.trim() != x.title {
+            warn!("{}: Spaces around title", x);
+            continue;
+        }
+        if x.artist.trim() != x.artist {
+            warn!("{}: Spaces around artist", x);
+            continue;
+        }
+    }
+
     info!("Check finished.");
 
     if opts.json_output {
