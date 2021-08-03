@@ -29,6 +29,8 @@
   },
   "dependencies": {
     "@tauri-apps/api": "^1.0.0-beta.4",
+    "dayjs": "^1.10.6",
+    "gridjs": "^5.0.2",
     "sirv-cli": "^1.0.0"
   }
 }
