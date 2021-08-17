@@ -38,22 +38,16 @@ fn similarity_ratio(a: &str, b: &str, len: usize) -> f32 {
 }
 
 fn similarity_check(field_name: &str, musics: &[MaybeMusic], picker: fn(&MaybeMusic) -> String) {
-    let contents: Vec<String> = musics.iter().map(picker).collect();
-    let chars_length: Vec<usize> = contents.iter().map(|x| x.chars().count()).collect();
-    for i in 0..contents.len() {
-        for j in i + 1..contents.len() {
-            if contents[i] == contents[j] {
+    for (i, one) in musics.iter().map(picker).enumerate() {
+        for (_, two) in musics.iter().map(picker).skip(i + 1).enumerate() {
+            if one == two {
                 continue;
             }
-            let sim = similarity_ratio(
-                &contents[i],
-                &contents[j],
-                chars_length[i].max(chars_length[j]),
-            );
+            let sim = similarity_ratio(&one, &two, one.chars().count().max(two.chars().count()));
             if sim > 0.75 {
                 warn!(
                     "[{}] {} & {}: Similar titles ({})",
-                    field_name, contents[i], contents[j], sim
+                    field_name, one, two, sim
                 );
             }
         }
