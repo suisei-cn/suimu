@@ -37,13 +37,17 @@ fn similarity_ratio(a: &str, b: &str, len: usize) -> f32 {
     1f32 - (levenshtein(a, b) as f32) / (len as f32)
 }
 
-fn similarity_check(field_name: &str, musics: &[MaybeMusic], picker: fn(&MaybeMusic) -> String) {
-    for (i, one) in musics.iter().map(picker).enumerate() {
-        for (_, two) in musics.iter().map(picker).skip(i + 1).enumerate() {
+fn similarity_check(
+    field_name: &str,
+    musics: &[MaybeMusic],
+    picker: impl for<'a> Fn(&'a MaybeMusic) -> &'a str,
+) {
+    for (i, one) in musics.iter().map(&picker).enumerate() {
+        for two in musics.iter().map(&picker).skip(i + 1) {
             if one == two {
                 continue;
             }
-            let sim = similarity_ratio(&one, &two, one.chars().count().max(two.chars().count()));
+            let sim = similarity_ratio(one, two, one.chars().count().max(two.chars().count()));
             if sim > 0.75 {
                 warn!(
                     "[{}] {} & {}: Similar titles ({})",
@@ -107,8 +111,8 @@ pub fn check(opts: CheckOpt) -> Result<()> {
     }
 
     info!("Check similar metadatas...");
-    similarity_check("Title", &check_result, |x| x.title.clone());
-    similarity_check("Artist", &check_result, |x| x.artist.clone());
+    similarity_check("Title", &check_result, |x| &x.title);
+    similarity_check("Artist", &check_result, |x| &x.artist);
 
     info!("Check finished.");
 
