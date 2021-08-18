@@ -33,7 +33,8 @@ pub struct CheckOpt {
 }
 
 /// Return the Levenshtein ratio of two strings. SHall be a value between 0 and 1.
-fn similarity_ratio(a: &str, b: &str, len: usize) -> f32 {
+fn similarity_ratio(a: &str, b: &str) -> f32 {
+    let len = a.chars().count().max(b.chars().count());
     1f32 - (levenshtein(a, b) as f32) / (len as f32)
 }
 
@@ -47,7 +48,7 @@ fn similarity_check(
             if one == two {
                 continue;
             }
-            let sim = similarity_ratio(one, two, one.chars().count().max(two.chars().count()));
+            let sim = similarity_ratio(one, two);
             if sim > 0.75 {
                 warn!(
                     "[{}] {} & {}: Similar titles ({})",
@@ -122,4 +123,14 @@ pub fn check(opts: CheckOpt) -> Result<()> {
     }
 
     Ok(())
+}
+
+#[test]
+fn test_similarity_ratio() {
+    // Normal cases
+    assert_eq!(similarity_ratio("test", "test"), 1.0);
+    assert_eq!(similarity_ratio("abcd", "efgh"), 0.0);
+    // CJK
+    assert_eq!(similarity_ratio("双海亚美", "双海真美"), 0.75);
+    assert_eq!(similarity_ratio("中文Aka", "英文Aka"), 0.8);
 }
