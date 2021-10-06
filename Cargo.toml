@@ -21,6 +21,7 @@ structopt = "0.3.21"
 strum = "0.21.0"
 strum_macros = "0.21.1"
 twox-hash = "1.6.0"
+unicode-normalization = "0.1"
 
 [dependencies.serde]
 features = ["derive"]

@@ -3,14 +3,14 @@ use crate::{MaybeMusic, Platform};
 use anyhow::{anyhow, ensure, Result};
 use lazy_static::lazy_static;
 use levenshtein::levenshtein;
+use log::{info, warn};
 use regex::Regex;
 use std::fs::File;
 use std::path::PathBuf;
 use std::str::FromStr;
 use structopt::clap;
 use structopt::StructOpt;
-
-use log::{info, warn};
+use unicode_normalization::{is_nfc, UnicodeNormalization};
 
 #[derive(StructOpt)]
 #[structopt(
@@ -117,10 +117,31 @@ pub fn check(opts: CheckOpt) -> Result<()> {
         }
     }
 
+    // Unicode NFC check
+    info!("Checking Unicode NFC conformity...");
+    for x in &check_result {
+        if !is_nfc(&x.title) {
+            warn!(
+                "{}: Title is not in NFC, please change to '{}'",
+                x,
+                x.title.chars().nfc()
+            );
+            continue;
+        }
+        if !is_nfc(&x.artist) {
+            warn!(
+                "{}: Artist is not in NFC, please change to '{}'",
+                x,
+                x.artist.chars().nfc()
+            );
+            continue;
+        }
+    }
+
     info!("Check similar metadatas...");
 
+    // Title: ignore bracketed suffix
     let mut check_result_altered = check_result.clone();
-
     for i in check_result_altered.iter_mut() {
         i.title = RE.replace_all(&i.title, "").to_string();
     }
