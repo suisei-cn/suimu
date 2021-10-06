@@ -109,11 +109,9 @@ pub fn check(opts: CheckOpt) -> Result<()> {
     for x in &check_result {
         if x.title.trim() != x.title {
             warn!("{}: Spaces around title", x);
-            continue;
         }
         if x.artist.trim() != x.artist {
             warn!("{}: Spaces around artist", x);
-            continue;
         }
     }
 
@@ -126,7 +124,6 @@ pub fn check(opts: CheckOpt) -> Result<()> {
                 x,
                 x.title.chars().nfc()
             );
-            continue;
         }
         if !is_nfc(&x.artist) {
             warn!(
@@ -134,7 +131,6 @@ pub fn check(opts: CheckOpt) -> Result<()> {
                 x,
                 x.artist.chars().nfc()
             );
-            continue;
         }
     }
 
