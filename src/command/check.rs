@@ -1,7 +1,9 @@
 use crate::utils::{check_csv, check_logic};
 use crate::{MaybeMusic, Platform};
 use anyhow::{anyhow, ensure, Result};
+use lazy_static::lazy_static;
 use levenshtein::levenshtein;
+use regex::Regex;
 use std::fs::File;
 use std::path::PathBuf;
 use std::str::FromStr;
@@ -59,6 +61,10 @@ fn similarity_check(
     }
 }
 
+lazy_static! {
+    static ref RE: Regex = Regex::new(r" ?[（\(].+[）\)]$").unwrap();
+}
+
 pub fn check(opts: CheckOpt) -> Result<()> {
     let csv_file: PathBuf = opts.csv_file;
     info!("CSV file: {:?}", csv_file);
@@ -112,7 +118,14 @@ pub fn check(opts: CheckOpt) -> Result<()> {
     }
 
     info!("Check similar metadatas...");
-    similarity_check("Title", &check_result, |x| &x.title);
+
+    let mut check_result_altered = check_result.clone();
+
+    for i in check_result_altered.iter_mut() {
+        i.title = RE.replace_all(&i.title, "").to_string();
+    }
+
+    similarity_check("Title", &check_result_altered, |x| &x.title);
     similarity_check("Artist", &check_result, |x| &x.artist);
 
     info!("Check finished.");

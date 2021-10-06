@@ -708,6 +708,7 @@ dependencies = [
  "levenshtein",
  "log",
  "pretty_env_logger",
+ "regex",
  "requestty",
  "serde",
  "serde_json",
