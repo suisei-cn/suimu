@@ -68,14 +68,14 @@ pub fn process_music(i: Music, conf: &EnvConf) {
 
     if !source_path.exists() {
         info!("Downloading {}", i);
-        let output = Command::new(&conf.youtube_dl_path)
-            .arg("-f")
+        let mut cmd = Command::new(&conf.youtube_dl_path);
+        cmd.arg("-f")
             .arg(info.format)
             .arg("-o")
             .arg(&source_path)
-            .arg(info.url_template.replace("{}", &i.video_id))
-            .output()
-            .expect("Failed to execute youtube-dl");
+            .arg(info.url_template.replace("{}", &i.video_id));
+        debug!("Running: {:?}", cmd);
+        let output = cmd.output().expect("Failed to execute youtube-dl");
 
         debug!(
             "youtube-dl output: \nStatus code: {}\nSTDOUT:\n{}\nSTDERR:\n{}",
@@ -109,6 +109,7 @@ pub fn process_music(i: Music, conf: &EnvConf) {
         ffmpeg_cmd.arg("-to").arg(i.clip_end.unwrap().to_string());
     }
 
+    debug!("Running: {:?}", ffmpeg_cmd);
     let output = ffmpeg_cmd
         .arg(output_path)
         .output()
