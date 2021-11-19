@@ -56,8 +56,6 @@ pub fn check_logic(x: &Music) -> Result<()> {
 
 #[cfg(test)]
 mod tests {
-    use std::str::FromStr;
-
     use chrono::DateTime;
 
     use super::*;
