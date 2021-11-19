@@ -129,7 +129,7 @@ pub fn build(opts: BuildOpt) -> Result<()> {
 
     info!("=============== Starting build ===============");
     for (idx, i) in music_process_arr.into_iter().enumerate() {
-        info!("======== Building {} / {} ========", idx, length);
+        info!("======== Building {} / {} ========", idx + 1, length);
         process_music(i, &env_conf, &mut global_stat);
     }
     info!("=============== Finishing build ===============");
