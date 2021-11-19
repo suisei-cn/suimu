@@ -28,6 +28,8 @@ features = ["derive"]
 version = "1.0.126"
 
 [dev-dependencies]
+cargo-audit = "*"
+
 [dev-dependencies.cargo-husky]
 default-features = false
 features = ["precommit-hook", "run-cargo-clippy", "run-cargo-fmt"]
