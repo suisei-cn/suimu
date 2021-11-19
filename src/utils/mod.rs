@@ -14,7 +14,9 @@ pub use maybemusic::MaybeMusic;
 pub use music::Music;
 pub use process_music::{process_music, EnvConf};
 
-#[derive(Debug, Eq, Hash, PartialEq, strum_macros::AsRefStr, strum_macros::EnumString)]
+#[derive(
+    Clone, Copy, Debug, Eq, Hash, PartialEq, strum_macros::AsRefStr, strum_macros::EnumString,
+)]
 pub enum Platform {
     #[strum(serialize = "TWITTER")]
     Twitter,

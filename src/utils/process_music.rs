@@ -1,5 +1,5 @@
-use crate::{Music, Platform};
-use log::{debug, info};
+use crate::{GlobalStat, Music, Platform};
+use log::{debug, info, warn};
 use std::collections::HashMap;
 use std::path::PathBuf;
 use std::process::Command;
@@ -50,7 +50,7 @@ pub struct EnvConf {
     pub ffmpeg_path: String,
 }
 
-pub fn process_music(i: Music, conf: &EnvConf) {
+pub fn process_music(i: Music, conf: &EnvConf, global_stat: &mut GlobalStat) {
     let info = &PLATFORM_INFO[&i.video_type];
 
     let mut output_path = conf.output_dir.clone();
@@ -58,7 +58,7 @@ pub fn process_music(i: Music, conf: &EnvConf) {
     debug!("Checking destionation: {:?}", output_path);
 
     if output_path.exists() {
-        info!("Found {:?}, skipping", output_path);
+        info!("Found {:?}, skipping.", output_path);
         return;
     }
 
@@ -67,6 +67,11 @@ pub fn process_music(i: Music, conf: &EnvConf) {
     debug!("Checking source: {:?}", source_path);
 
     if !source_path.exists() {
+        let source_set = (i.video_type, i.video_id.clone());
+        if global_stat.failed_video_items.contains(&source_set) {
+            info!("{:?} has failed before. Skipping.", source_set);
+            return;
+        }
         info!("Downloading {}", i);
         let mut cmd = Command::new(&conf.youtube_dl_path);
         cmd.arg("-f")
@@ -76,13 +81,26 @@ pub fn process_music(i: Music, conf: &EnvConf) {
             .arg(info.url_template.replace("{}", &i.video_id));
         debug!("Running: {:?}", cmd);
         let output = cmd.output().expect("Failed to execute youtube-dl");
+        let status_code = output.status;
+        let stdout = std::str::from_utf8(&output.stdout).unwrap_or("[Failed to decode stdout]");
+        let stderr = std::str::from_utf8(&output.stderr).unwrap_or("[Failed to decode stderr]");
 
         debug!(
             "youtube-dl output: \nStatus code: {}\nSTDOUT:\n{}\nSTDERR:\n{}",
-            output.status,
-            std::str::from_utf8(&output.stdout).unwrap_or("[Failed to decode stdout]"),
-            std::str::from_utf8(&output.stderr).unwrap_or("[Failed to decode stderr]")
+            output.status, stdout, stderr
         );
+
+        if !status_code.success() {
+            warn!(
+                "Download failure: non-zero status code {}. Skipping conversion.",
+                status_code
+            );
+            warn!("stderr:\n{}", stderr);
+            global_stat
+                .failed_video_items
+                .insert((i.video_type, i.video_id));
+            return;
+        }
     } else {
         info!("Skipping download: found {:?}", source_path);
     }
@@ -114,10 +132,17 @@ pub fn process_music(i: Music, conf: &EnvConf) {
         .arg(output_path)
         .output()
         .expect("Failed to execute ffmpeg");
+    let status_code = output.status;
+    let stdout = std::str::from_utf8(&output.stdout).unwrap_or("[Failed to decode stdout]");
+    let stderr = std::str::from_utf8(&output.stderr).unwrap_or("[Failed to decode stderr]");
+
     debug!(
         "ffmpeg output: \nStatus code: {}\nSTDOUT:\n{}\nSTDERR:\n{}",
-        output.status,
-        std::str::from_utf8(&output.stdout).unwrap_or("[Failed to decode stdout]"),
-        std::str::from_utf8(&output.stderr).unwrap_or("[Failed to decode stderr]")
+        output.status, stdout, stderr
     );
+
+    if !status_code.success() {
+        warn!("Conversion failure: non-zero status code: {}.", status_code);
+        warn!("stderr:\n{}", stderr);
+    }
 }

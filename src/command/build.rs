@@ -1,6 +1,7 @@
 use crate::utils::{check_csv, process_music, EnvConf};
-use crate::Music;
+use crate::{Music, Platform};
 use anyhow::{ensure, Result};
+use std::collections::HashSet;
 use std::convert::TryInto;
 use std::fs::File;
 use std::path::PathBuf;
@@ -33,6 +34,10 @@ pub struct BuildOpt {
 
     #[structopt(long, about = "youtube-dl executable", default_value = "youtube-dl")]
     ytdl: String,
+}
+
+pub struct GlobalStat {
+    pub failed_video_items: HashSet<(Platform, String)>,
 }
 
 impl BuildOpt {
@@ -116,9 +121,18 @@ pub fn build(opts: BuildOpt) -> Result<()> {
         ffmpeg_path: opts.ffmpeg,
     };
 
-    for i in music_process_arr {
-        process_music(i, &env_conf);
+    let mut global_stat = GlobalStat {
+        failed_video_items: HashSet::new(),
+    };
+
+    let length = music_process_arr.len();
+
+    info!("=============== Starting build ===============");
+    for (idx, i) in music_process_arr.into_iter().enumerate() {
+        info!("======== Building {} / {} ========", idx, length);
+        process_music(i, &env_conf, &mut global_stat);
     }
+    info!("=============== Finishing build ===============");
 
     Ok(())
 }
