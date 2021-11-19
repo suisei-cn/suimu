@@ -18,7 +18,7 @@ lazy_static! {
         m.insert(
             Platform::YouTube,
             PlatformSettings {
-                url_template: "https: //www.youtube.com/watch?v={}",
+                url_template: "https://www.youtube.com/watch?v={}",
                 format: "bestaudio[ext=m4a]",
                 source_ext: "mp4",
             },
