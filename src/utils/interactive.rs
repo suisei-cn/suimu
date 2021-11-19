@@ -11,9 +11,7 @@ pub trait FromInteractive: Sized {
 
 #[macro_export]
 macro_rules! get_answer {
-    ($answers: expr, $token: expr$(,)?) => {{
-        get_answer!($answers, as_string, $token)
-    }};
+    ($answers: expr, $token: expr$(,)?) => {{ get_answer!($answers, as_string, $token) }};
     ($answers: expr, $as_type: ident, $token: expr$(,)?) => {{
         let ans: &Answers = &$answers;
         let token: &str = $token;

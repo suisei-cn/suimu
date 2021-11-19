@@ -1,14 +1,14 @@
-use crate::utils::{check_csv, process_music, EnvConf};
-use crate::{Music, Platform};
-use anyhow::{ensure, Result};
 use std::collections::HashSet;
 use std::convert::TryInto;
 use std::fs::File;
 use std::path::PathBuf;
-use structopt::clap;
-use structopt::StructOpt;
 
+use anyhow::{ensure, Result};
 use log::{debug, info, warn};
+use structopt::{clap, StructOpt};
+
+use crate::utils::{check_csv, process_music, EnvConf};
+use crate::{Music, Platform};
 
 #[derive(StructOpt, Debug, Clone)]
 #[structopt(

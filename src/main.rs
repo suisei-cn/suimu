@@ -1,8 +1,5 @@
 use anyhow::Result;
-
-use structopt::clap;
-use structopt::StructOpt;
-
+use structopt::{clap, StructOpt};
 use suimu::command::*;
 
 #[derive(StructOpt)]

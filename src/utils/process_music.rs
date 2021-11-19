@@ -1,10 +1,11 @@
-use crate::{GlobalStat, Music, Platform};
-use log::{debug, info, warn};
 use std::collections::HashMap;
 use std::path::PathBuf;
 use std::process::Command;
 
 use lazy_static::lazy_static;
+use log::{debug, info, warn};
+
+use crate::{GlobalStat, Music, Platform};
 
 pub struct PlatformSettings {
     url_template: &'static str,

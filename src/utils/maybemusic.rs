@@ -1,8 +1,8 @@
+use std::fmt::{Display, Formatter, Result as FmtResult};
+use std::hash::Hasher;
+
 use chrono::Local;
 use serde::{Deserialize, Serialize};
-use std::fmt::Result as FmtResult;
-use std::fmt::{Display, Formatter};
-use std::hash::Hasher;
 use twox_hash::XxHash64;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]

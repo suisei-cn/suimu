@@ -7,7 +7,6 @@ use requestty::question::Completions;
 use requestty::{Answer, Answers, Question};
 
 use crate::utils::{FromInteractive, IsHidden, Prefix};
-
 use crate::{build, get_answer, BuildOpt};
 
 fn file_exists(raw_path: &str, _prev: &Answers) -> Result<(), String> {

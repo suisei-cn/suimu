@@ -1,11 +1,12 @@
-use crate::{MaybeMusic, Platform};
+use std::convert::TryFrom;
+use std::fmt::{Display, Formatter, Result as FmtResult};
+use std::str::FromStr;
+
 use anyhow::{anyhow, bail, Result};
 use chrono::{DateTime, FixedOffset};
 use serde::{Serialize, Serializer};
-use std::convert::TryFrom;
-use std::fmt::Result as FmtResult;
-use std::fmt::{Display, Formatter};
-use std::str::FromStr;
+
+use crate::{MaybeMusic, Platform};
 #[derive(Debug, Serialize)]
 pub struct Music {
     #[serde(serialize_with = "serialize_3339")]

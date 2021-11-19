@@ -1,16 +1,17 @@
-use crate::utils::{check_csv, check_logic};
-use crate::{MaybeMusic, Music, Platform};
+use std::fs::File;
+use std::path::PathBuf;
+use std::str::FromStr;
+
 use anyhow::{anyhow, ensure, Result};
 use lazy_static::lazy_static;
 use levenshtein::levenshtein;
 use log::{info, warn};
 use regex::Regex;
-use std::fs::File;
-use std::path::PathBuf;
-use std::str::FromStr;
-use structopt::clap;
-use structopt::StructOpt;
+use structopt::{clap, StructOpt};
 use unicode_normalization::{is_nfc, UnicodeNormalization};
+
+use crate::utils::{check_csv, check_logic};
+use crate::{MaybeMusic, Music, Platform};
 
 #[derive(StructOpt)]
 #[structopt(
@@ -34,7 +35,8 @@ pub struct CheckOpt {
     json_output: bool,
 }
 
-/// Return the Levenshtein ratio of two strings. SHall be a value between 0 and 1.
+/// Return the Levenshtein ratio of two strings. SHall be a value between 0 and
+/// 1.
 fn similarity_ratio(a: &str, b: &str) -> f32 {
     let len = a.chars().count().max(b.chars().count());
     1f32 - (levenshtein(a, b) as f32) / (len as f32)

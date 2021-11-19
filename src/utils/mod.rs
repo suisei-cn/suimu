@@ -3,17 +3,16 @@ mod maybemusic;
 mod music;
 mod process_music;
 
-use anyhow::{anyhow, ensure, Result};
-use csv::{Error, Reader};
-use serde::Serialize;
 use std::io::Read;
 
-use strum_macros;
-
+use anyhow::{anyhow, ensure, Result};
+use csv::{Error, Reader};
 pub use interactive::*;
 pub use maybemusic::MaybeMusic;
 pub use music::Music;
 pub use process_music::{process_music, EnvConf};
+use serde::Serialize;
+use strum_macros;
 
 #[derive(
     Clone,
@@ -74,64 +73,72 @@ mod tests {
         assert!(ret1.is_ok());
         assert_eq!(ret1.unwrap().len(), 1);
 
-        assert!(check_csv(
-            "video_type,video_id,clip_start,clip_end,status,title,artist,performer,comment
+        assert!(
+            check_csv(
+                "video_type,video_id,clip_start,clip_end,status,title,artist,performer,comment
 TWITTER,978601113791299585,,,0,Starduster,ジミーサムP,星街すいせい,"
-                .as_bytes()
-        )
-        .is_err());
+                    .as_bytes()
+            )
+            .is_err()
+        );
     }
 
     #[test]
     fn test_check_logic() {
         let common_dt = DateTime::parse_from_rfc3339("2021-06-25T22:30:00+09:00").unwrap();
 
-        assert!(check_logic(&Music {
-            datetime: common_dt,
-            video_type: Platform::YouTube,
-            video_id: "ZfDYRy17CBY".to_string(),
-            clip_end: None,
-            xxhash: "".to_string(),
-            status: 0,
-            title: "".to_string(),
-            artist: "".to_string(),
-            performer: "".to_string(),
-            comment: "".to_string(),
+        assert!(
+            check_logic(&Music {
+                datetime: common_dt,
+                video_type: Platform::YouTube,
+                video_id: "ZfDYRy17CBY".to_string(),
+                clip_end: None,
+                xxhash: "".to_string(),
+                status: 0,
+                title: "".to_string(),
+                artist: "".to_string(),
+                performer: "".to_string(),
+                comment: "".to_string(),
 
-            clip_start: Some(1.1),
-        })
-        .is_ok());
+                clip_start: Some(1.1),
+            })
+            .is_ok()
+        );
 
-        assert!(check_logic(&Music {
-            datetime: common_dt,
-            video_type: Platform::YouTube,
-            video_id: "ZfDYRy17CBY".to_string(),
-            xxhash: "".to_string(),
-            status: 0,
-            title: "".to_string(),
-            artist: "".to_string(),
-            performer: "".to_string(),
-            comment: "".to_string(),
+        assert!(
+            check_logic(&Music {
+                datetime: common_dt,
+                video_type: Platform::YouTube,
+                video_id: "ZfDYRy17CBY".to_string(),
+                xxhash: "".to_string(),
+                status: 0,
+                title: "".to_string(),
+                artist: "".to_string(),
+                performer: "".to_string(),
+                comment: "".to_string(),
 
-            clip_start: Some(3.1),
-            clip_end: Some(2.2),
-        })
-        .is_err());
+                clip_start: Some(3.1),
+                clip_end: Some(2.2),
+            })
+            .is_err()
+        );
 
-        assert!(check_logic(&Music {
-            datetime: common_dt,
-            video_type: Platform::YouTube,
-            video_id: "ZfDYRy17CBY".to_string(),
-            xxhash: "".to_string(),
-            status: 0,
-            title: "".to_string(),
-            artist: "".to_string(),
-            performer: "".to_string(),
-            comment: "".to_string(),
+        assert!(
+            check_logic(&Music {
+                datetime: common_dt,
+                video_type: Platform::YouTube,
+                video_id: "ZfDYRy17CBY".to_string(),
+                xxhash: "".to_string(),
+                status: 0,
+                title: "".to_string(),
+                artist: "".to_string(),
+                performer: "".to_string(),
+                comment: "".to_string(),
 
-            clip_start: Some(1.1),
-            clip_end: Some(2.2),
-        })
-        .is_ok());
+                clip_start: Some(1.1),
+                clip_end: Some(2.2),
+            })
+            .is_ok()
+        );
     }
 }
