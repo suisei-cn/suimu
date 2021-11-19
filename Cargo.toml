@@ -5,13 +5,13 @@ homepage = "https://github.com/suisei-cn/suimu"
 license = "MIT"
 name = "suimu"
 repository = "https://github.com/suisei-cn/suimu.git"
-version = "0.4.1"
+version = "0.4.2"
 [dependencies]
 anyhow = "1.0.41"
 chrono = "0.4.19"
 csv = "1.1.6"
 lazy_static = "1.4.0"
-levenshtein = "*"
+levenshtein = "1.0.5"
 log = "0.4.14"
 pretty_env_logger = "0.4.0"
 regex = "1.5.4"
@@ -28,7 +28,7 @@ features = ["derive"]
 version = "1.0.126"
 
 [dev-dependencies]
-cargo-audit = "*"
+cargo-audit = "0.16.0"
 
 [dev-dependencies.cargo-husky]
 default-features = false
