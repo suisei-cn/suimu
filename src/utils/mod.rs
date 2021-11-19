@@ -5,6 +5,7 @@ mod process_music;
 
 use anyhow::{anyhow, ensure, Result};
 use csv::{Error, Reader};
+use serde::Serialize;
 use std::io::Read;
 
 use strum_macros;
@@ -15,7 +16,15 @@ pub use music::Music;
 pub use process_music::{process_music, EnvConf};
 
 #[derive(
-    Clone, Copy, Debug, Eq, Hash, PartialEq, strum_macros::AsRefStr, strum_macros::EnumString,
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    PartialEq,
+    Serialize,
+    strum_macros::AsRefStr,
+    strum_macros::EnumString,
 )]
 pub enum Platform {
     #[strum(serialize = "TWITTER")]
@@ -34,7 +43,7 @@ pub fn check_csv(source: impl Read) -> Result<Vec<MaybeMusic>> {
         .map_err(|err| anyhow!(err))
 }
 
-pub fn check_logic(x: &MaybeMusic) -> Result<()> {
+pub fn check_logic(x: &Music) -> Result<()> {
     // If clip start & end presents, make sure it's consistent
     if x.clip_start.is_some() && x.clip_end.is_some() {
         ensure!(
@@ -48,6 +57,10 @@ pub fn check_logic(x: &MaybeMusic) -> Result<()> {
 
 #[cfg(test)]
 mod tests {
+    use std::str::FromStr;
+
+    use chrono::DateTime;
+
     use super::*;
 
     #[test]
@@ -71,25 +84,53 @@ TWITTER,978601113791299585,,,0,Starduster,ジミーサムP,星街すいせい,"
 
     #[test]
     fn test_check_logic() {
-        assert!(check_logic(&MaybeMusic::default()).is_ok());
+        let common_dt = DateTime::parse_from_rfc3339("2021-06-25T22:30:00+09:00").unwrap();
 
-        assert!(check_logic(&MaybeMusic {
+        assert!(check_logic(&Music {
+            datetime: common_dt,
+            video_type: Platform::YouTube,
+            video_id: "ZfDYRy17CBY".to_string(),
+            clip_end: None,
+            xxhash: "".to_string(),
+            status: 0,
+            title: "".to_string(),
+            artist: "".to_string(),
+            performer: "".to_string(),
+            comment: "".to_string(),
+
             clip_start: Some(1.1),
-            ..MaybeMusic::default()
         })
         .is_ok());
 
-        assert!(check_logic(&MaybeMusic {
+        assert!(check_logic(&Music {
+            datetime: common_dt,
+            video_type: Platform::YouTube,
+            video_id: "ZfDYRy17CBY".to_string(),
+            xxhash: "".to_string(),
+            status: 0,
+            title: "".to_string(),
+            artist: "".to_string(),
+            performer: "".to_string(),
+            comment: "".to_string(),
+
             clip_start: Some(3.1),
             clip_end: Some(2.2),
-            ..MaybeMusic::default()
         })
         .is_err());
 
-        assert!(check_logic(&MaybeMusic {
+        assert!(check_logic(&Music {
+            datetime: common_dt,
+            video_type: Platform::YouTube,
+            video_id: "ZfDYRy17CBY".to_string(),
+            xxhash: "".to_string(),
+            status: 0,
+            title: "".to_string(),
+            artist: "".to_string(),
+            performer: "".to_string(),
+            comment: "".to_string(),
+
             clip_start: Some(1.1),
             clip_end: Some(2.2),
-            ..MaybeMusic::default()
         })
         .is_ok());
     }

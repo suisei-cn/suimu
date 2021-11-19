@@ -1,5 +1,5 @@
 use crate::utils::{check_csv, check_logic};
-use crate::{MaybeMusic, Platform};
+use crate::{MaybeMusic, Music, Platform};
 use anyhow::{anyhow, ensure, Result};
 use lazy_static::lazy_static;
 use levenshtein::levenshtein;
@@ -84,14 +84,6 @@ pub fn check(opts: CheckOpt) -> Result<()> {
         return Ok(());
     }
 
-    // Logic analysis
-    info!("Checking entry logic...");
-    for x in &check_result {
-        if let Err(v) = check_logic(x) {
-            warn!("{}: {}", x, v);
-        }
-    }
-
     // Support analysis
     info!("Checking entry support...");
     for x in &check_result {
@@ -145,10 +137,34 @@ pub fn check(opts: CheckOpt) -> Result<()> {
     similarity_check("Title", &check_result_altered, |x| &x.title);
     similarity_check("Artist", &check_result, |x| &x.artist);
 
+    let converted_result = check_result
+        .into_iter()
+        .map(|x| {
+            let x_desc = x.to_string();
+            let v: Result<Music> = x.try_into();
+            match v {
+                Ok(m) => Some(m),
+                Err(e) => {
+                    warn!("{}: Failed to convert to music: {}", x_desc, e);
+                    None
+                }
+            }
+        })
+        .flatten()
+        .collect::<Vec<Music>>();
+
+    // Logic analysis
+    info!("Checking entry logic...");
+    for x in &converted_result {
+        if let Err(v) = check_logic(x) {
+            warn!("{}: {}", x, v);
+        }
+    }
+
     info!("Check finished.");
 
     if opts.json_output {
-        let base = serde_json::to_string(&check_result).unwrap();
+        let base = serde_json::to_string(&converted_result).unwrap();
         println!("{}", base);
     }
 

@@ -102,7 +102,7 @@ pub fn build(opts: BuildOpt) -> Result<()> {
         .into_iter()
         .filter(|x| {
             let mut dir = output_dir.to_owned();
-            dir.push(format!("{}.m4a", x.hash()));
+            dir.push(format!("{}.m4a", x.xxhash));
             !dir.exists()
         })
         .collect();

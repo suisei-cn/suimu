@@ -54,7 +54,7 @@ pub fn process_music(i: Music, conf: &EnvConf, global_stat: &mut GlobalStat) {
     let info = &PLATFORM_INFO[&i.video_type];
 
     let mut output_path = conf.output_dir.clone();
-    output_path.push(format!("{}.{}", i.hash(), "m4a"));
+    output_path.push(format!("{}.{}", i.xxhash, "m4a"));
     debug!("Checking destionation: {:?}", output_path);
 
     if output_path.exists() {
