@@ -1,5 +1,5 @@
 use crate::{Music, Platform};
-use log::info;
+use log::{debug, info};
 use std::collections::HashMap;
 use std::path::PathBuf;
 use std::process::Command;
@@ -53,8 +53,18 @@ pub struct EnvConf {
 pub fn process_music(i: Music, conf: &EnvConf) {
     let info = &PLATFORM_INFO[&i.video_type];
 
+    let mut output_path = conf.output_dir.clone();
+    output_path.push(format!("{}.{}", i.hash(), "m4a"));
+    debug!("Checking destionation: {:?}", output_path);
+
+    if output_path.exists() {
+        info!("Found {:?}, skipping", output_path);
+        return;
+    }
+
     let mut source_path = conf.source_dir.clone();
     source_path.push(format!("{}.{}", i.video_id, info.source_ext));
+    debug!("Checking source: {:?}", source_path);
 
     if !source_path.exists() {
         info!("Downloading {}", i);
@@ -70,37 +80,36 @@ pub fn process_music(i: Music, conf: &EnvConf) {
         info!("Skipping download: found {:?}", source_path);
     }
 
-    let mut output_path = conf.output_dir.clone();
-    output_path.push(format!("{}.{}", i.hash(), "m4a"));
+    info!("Converting {}", i);
+    let mut ffmpeg_cmd = Command::new(&conf.ffmpeg_path);
+    ffmpeg_cmd
+        .arg("-i")
+        .arg(&source_path)
+        .arg("-acodec")
+        .arg("copy")
+        .arg("-movflags")
+        .arg("faststart")
+        .arg("-metadata")
+        .arg(format!("title={} / {}", i.title, i.artist))
+        .arg("-metadata")
+        .arg(format!("artist={}", i.performer))
+        .arg("-vn");
 
-    if !output_path.exists() {
-        info!("Converting {}", i);
-        let mut ffmpeg_cmd = Command::new(&conf.ffmpeg_path);
-        ffmpeg_cmd
-            .arg("-i")
-            .arg(&source_path)
-            .arg("-acodec")
-            .arg("copy")
-            .arg("-movflags")
-            .arg("faststart")
-            .arg("-metadata")
-            .arg(format!("title={} / {}", i.title, i.artist))
-            .arg("-metadata")
-            .arg(format!("artist={}", i.performer))
-            .arg("-vn");
-
-        if i.clip_start.is_some() {
-            ffmpeg_cmd.arg("-ss").arg(i.clip_start.unwrap().to_string());
-        }
-        if i.clip_end.is_some() {
-            ffmpeg_cmd.arg("-to").arg(i.clip_end.unwrap().to_string());
-        }
-
-        ffmpeg_cmd
-            .arg(output_path)
-            .output()
-            .expect("Failed to execute ffmpeg");
-    } else {
-        info!("Skipping conversion: found {:?}", output_path);
+    if i.clip_start.is_some() {
+        ffmpeg_cmd.arg("-ss").arg(i.clip_start.unwrap().to_string());
     }
+    if i.clip_end.is_some() {
+        ffmpeg_cmd.arg("-to").arg(i.clip_end.unwrap().to_string());
+    }
+
+    let output = ffmpeg_cmd
+        .arg(output_path)
+        .output()
+        .expect("Failed to execute ffmpeg");
+    debug!(
+        "ffmpeg output: \nStatus code: {}\nSTDOUT:\n{}\nSTDERR:\n{}",
+        output.status,
+        std::str::from_utf8(&output.stdout).unwrap_or("[Failed to decode stdout]"),
+        std::str::from_utf8(&output.stderr).unwrap_or("[Failed to decode stderr]")
+    );
 }
