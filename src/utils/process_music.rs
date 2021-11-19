@@ -68,7 +68,7 @@ pub fn process_music(i: Music, conf: &EnvConf) {
 
     if !source_path.exists() {
         info!("Downloading {}", i);
-        Command::new(&conf.youtube_dl_path)
+        let output = Command::new(&conf.youtube_dl_path)
             .arg("-f")
             .arg(info.format)
             .arg("-o")
@@ -76,6 +76,13 @@ pub fn process_music(i: Music, conf: &EnvConf) {
             .arg(info.url_template.replace("{}", &i.video_id))
             .output()
             .expect("Failed to execute youtube-dl");
+
+        debug!(
+            "youtube-dl output: \nStatus code: {}\nSTDOUT:\n{}\nSTDERR:\n{}",
+            output.status,
+            std::str::from_utf8(&output.stdout).unwrap_or("[Failed to decode stdout]"),
+            std::str::from_utf8(&output.stderr).unwrap_or("[Failed to decode stderr]")
+        );
     } else {
         info!("Skipping download: found {:?}", source_path);
     }
