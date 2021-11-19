@@ -87,7 +87,7 @@ pub fn process_music(i: Music, conf: &EnvConf, global_stat: &mut GlobalStat) {
         let stderr = std::str::from_utf8(&output.stderr).unwrap_or("[Failed to decode stderr]");
 
         debug!(
-            "youtube-dl output: \nStatus code: {}\nSTDOUT:\n{}\nSTDERR:\n{}",
+            "youtube-dl output: \n{}\nSTDOUT:\n{}\nSTDERR:\n{}",
             output.status, stdout, stderr
         );
 
@@ -138,7 +138,7 @@ pub fn process_music(i: Music, conf: &EnvConf, global_stat: &mut GlobalStat) {
     let stderr = std::str::from_utf8(&output.stderr).unwrap_or("[Failed to decode stderr]");
 
     debug!(
-        "ffmpeg output: \nStatus code: {}\nSTDOUT:\n{}\nSTDERR:\n{}",
+        "ffmpeg output: \n{}\nSTDOUT:\n{}\nSTDERR:\n{}",
         output.status, stdout, stderr
     );
 
