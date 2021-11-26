@@ -12,6 +12,8 @@ use structopt::{clap, StructOpt};
 use crate::utils::{check_csv, process_music, EnvConf};
 use crate::{Music, Platform};
 
+const EXTENSION: &'static str = "m4a";
+
 #[derive(StructOpt, Debug, Clone)]
 #[structopt(
 version = clap::crate_version ! (),
@@ -70,7 +72,7 @@ impl OutputMusic {
         Self {
             url: baseurl
                 .replacen("{}", &mu.xxhash, 1)
-                .replacen("{}", "m4a", 1),
+                .replacen("{}", EXTENSION, 1),
             datetime: mu.datetime,
             title: mu.title.clone(),
             artist: mu.artist.clone(),
@@ -148,14 +150,14 @@ pub fn build(opts: BuildOpt) -> Result<()> {
 
     info!("{} valid entries found.", music_arr.len());
 
-    let music_process_arr: Vec<Music> = music_arr
-        .into_iter()
+    let music_process_arr = music_arr
+        .iter()
         .filter(|x| {
             let mut dir = output_dir.to_owned();
             dir.push(format!("{}.m4a", x.xxhash));
             !dir.exists()
         })
-        .collect();
+        .collect::<Vec<_>>();
 
     info!("{} entries to process.", music_process_arr.len());
 
@@ -166,7 +168,7 @@ pub fn build(opts: BuildOpt) -> Result<()> {
 
     let env_conf = EnvConf {
         source_dir: opts.source_dir,
-        output_dir,
+        output_dir: output_dir.clone(),
         youtube_dl_path: opts.ytdl,
         ffmpeg_path: opts.ffmpeg,
     };
@@ -186,8 +188,19 @@ pub fn build(opts: BuildOpt) -> Result<()> {
 
     if opts.output_json.is_some() {
         let baseurl = opts.baseurl.unwrap();
-        let output = music_process_arr
+        let output = music_arr
             .iter()
+            .filter(|x| {
+                let filename = format!("{}.{}", x.xxhash, EXTENSION);
+                let mut music_path = output_dir.clone();
+                music_path.push(filename);
+                if !music_path.exists() {
+                    warn!("{} is not generated. Skipping.", x);
+                    false
+                } else {
+                    true
+                }
+            })
             .map(|x| OutputMusic::from(x, &baseurl))
             .collect::<Vec<_>>();
         let output_json_text = serde_json::to_string(&output)?;
