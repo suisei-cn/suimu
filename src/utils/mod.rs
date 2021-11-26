@@ -10,7 +10,7 @@ use csv::{Error, Reader};
 pub use interactive::*;
 pub use maybemusic::MaybeMusic;
 pub use music::Music;
-pub use process_music::{process_music, EnvConf};
+pub use process_music::{process_music, EnvConf, PLATFORM_INFO};
 use serde::Serialize;
 use strum_macros;
 

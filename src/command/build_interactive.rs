@@ -116,6 +116,16 @@ impl FromInteractive for BuildOpt {
             .message("youtube-dl executable")
             .default("youtube-dl")
             .build();
+        let output_json_question = Question::input("output_json")
+            .when(is_advance_mode)
+            .message("output json path")
+            .default("")
+            .build();
+        let baseurl_question = Question::input("baseurl")
+            .when(is_advance_mode)
+            .message("output json URL base")
+            .default("")
+            .build();
         let answers = requestty::prompt([
             csv_file_question,
             out_dir_question,
@@ -124,6 +134,8 @@ impl FromInteractive for BuildOpt {
             dry_run_question,
             ffmpeg_question,
             ytdl_question,
+            output_json_question,
+            baseurl_question,
         ])?;
         debug!("Answers: {:#?}", answers);
 
@@ -134,6 +146,14 @@ impl FromInteractive for BuildOpt {
             get_answer!(answers, as_bool, "dry_run"),
             get_answer!(answers, "ffmpeg"),
             get_answer!(answers, "ytdl"),
+            match get_answer!(answers, "output_json").as_ref() {
+                "" => None,
+                i => Some(i.into()),
+            },
+            match get_answer!(answers, "baseurl_question").as_ref() {
+                "" => None,
+                i => Some(i.into()),
+            },
         );
 
         Ok(opts)

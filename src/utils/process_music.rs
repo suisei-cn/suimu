@@ -8,7 +8,7 @@ use log::{debug, info, warn};
 use crate::{GlobalStat, Music, Platform};
 
 pub struct PlatformSettings {
-    url_template: &'static str,
+    pub url_template: &'static str,
     format: &'static str,
     source_ext: &'static str,
 }
@@ -51,7 +51,7 @@ pub struct EnvConf {
     pub ffmpeg_path: String,
 }
 
-pub fn process_music(i: Music, conf: &EnvConf, global_stat: &mut GlobalStat) {
+pub fn process_music(i: &Music, conf: &EnvConf, global_stat: &mut GlobalStat) {
     let info = &PLATFORM_INFO[&i.video_type];
 
     let mut output_path = conf.output_dir.clone();
@@ -99,7 +99,7 @@ pub fn process_music(i: Music, conf: &EnvConf, global_stat: &mut GlobalStat) {
             warn!("stderr:\n{}", stderr);
             global_stat
                 .failed_video_items
-                .insert((i.video_type, i.video_id));
+                .insert((i.video_type, i.video_id.clone()));
             return;
         }
     } else {

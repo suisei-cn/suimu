@@ -4,7 +4,9 @@ use std::fs::File;
 use std::path::PathBuf;
 
 use anyhow::{ensure, Result};
+use chrono::{DateTime, FixedOffset};
 use log::{debug, info, warn};
+use serde::{Serialize, Serializer};
 use structopt::{clap, StructOpt};
 
 use crate::utils::{check_csv, process_music, EnvConf};
@@ -26,6 +28,12 @@ pub struct BuildOpt {
     #[structopt(short, long, about = "Source directory", required = true)]
     source_dir: PathBuf,
 
+    #[structopt(long, about = "Target JSON file", requires = "baseurl")]
+    output_json: Option<PathBuf>,
+
+    #[structopt(long, about = "Target JSON URL base")]
+    baseurl: Option<String>,
+
     #[structopt(short, long, about = "Don't process musics")]
     dry_run: bool,
 
@@ -36,11 +44,49 @@ pub struct BuildOpt {
     ytdl: String,
 }
 
+#[derive(Serialize)]
+pub struct OutputMusic {
+    url: String,
+    #[serde(serialize_with = "serialize_rfc3339")]
+    datetime: DateTime<FixedOffset>,
+    title: String,
+    artist: String,
+    performer: String,
+    status: u16,
+    source: String,
+}
+
+pub fn serialize_rfc3339<S: Serializer>(
+    val: &DateTime<FixedOffset>,
+    serializer: S,
+) -> Result<S::Ok, S::Error> {
+    serializer.serialize_str(&val.to_rfc3339())
+}
+
+impl OutputMusic {
+    fn from(mu: &Music, baseurl: &str) -> Self {
+        let info = &crate::utils::PLATFORM_INFO[&mu.video_type];
+        let base_source = info.url_template.replace("{}", &mu.video_id);
+        Self {
+            url: baseurl
+                .replacen("{}", &mu.xxhash, 1)
+                .replacen("{}", "m4a", 1),
+            datetime: mu.datetime,
+            title: mu.title.clone(),
+            artist: mu.artist.clone(),
+            performer: mu.performer.clone(),
+            status: mu.status,
+            source: base_source,
+        }
+    }
+}
+
 pub struct GlobalStat {
     pub failed_video_items: HashSet<(Platform, String)>,
 }
 
 impl BuildOpt {
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         csv_file: PathBuf,
         output_dir: PathBuf,
@@ -48,6 +94,8 @@ impl BuildOpt {
         dry_run: bool,
         ffmpeg: String,
         ytdl: String,
+        output_json: Option<PathBuf>,
+        baseurl: Option<String>,
     ) -> Self {
         Self {
             csv_file,
@@ -56,6 +104,8 @@ impl BuildOpt {
             dry_run,
             ffmpeg,
             ytdl,
+            output_json,
+            baseurl,
         }
     }
 }
@@ -128,11 +178,21 @@ pub fn build(opts: BuildOpt) -> Result<()> {
     let length = music_process_arr.len();
 
     info!("=============== Starting build ===============");
-    for (idx, i) in music_process_arr.into_iter().enumerate() {
+    for (idx, i) in music_process_arr.iter().enumerate() {
         info!("======== Building {} / {} ========", idx + 1, length);
         process_music(i, &env_conf, &mut global_stat);
     }
     info!("=============== Finishing build ===============");
+
+    if opts.output_json.is_some() {
+        let baseurl = opts.baseurl.unwrap();
+        let output = music_process_arr
+            .iter()
+            .map(|x| OutputMusic::from(x, &baseurl))
+            .collect::<Vec<_>>();
+        let output_json_text = serde_json::to_string(&output)?;
+        std::fs::write(opts.output_json.unwrap(), output_json_text)?;
+    }
 
     Ok(())
 }
