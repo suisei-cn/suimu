@@ -94,3 +94,9 @@ impl Display for Music {
         write!(f, "{} - {} ({})", self.artist, self.title, video_fmtid)
     }
 }
+
+impl Music {
+    pub fn is_member_only(&self) -> bool {
+        self.status & 8 > 0
+    }
+}

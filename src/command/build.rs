@@ -12,7 +12,7 @@ use structopt::{clap, StructOpt};
 use crate::utils::{check_csv, process_music, EnvConf};
 use crate::{Music, Platform};
 
-const EXTENSION: &'static str = "m4a";
+const EXTENSION: &str = "m4a";
 
 #[derive(StructOpt, Debug, Clone)]
 #[structopt(
@@ -153,6 +153,9 @@ pub fn build(opts: BuildOpt) -> Result<()> {
     let music_process_arr = music_arr
         .iter()
         .filter(|x| {
+            if x.is_member_only() {
+                return false;
+            }
             let mut dir = output_dir.to_owned();
             dir.push(format!("{}.m4a", x.xxhash));
             !dir.exists()
@@ -191,6 +194,9 @@ pub fn build(opts: BuildOpt) -> Result<()> {
         let output = music_arr
             .iter()
             .filter(|x| {
+                if x.is_member_only() {
+                    return false;
+                }
                 let filename = format!("{}.{}", x.xxhash, EXTENSION);
                 let mut music_path = output_dir.clone();
                 music_path.push(filename);
