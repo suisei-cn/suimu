@@ -5,7 +5,7 @@ homepage = "https://github.com/suisei-cn/suimu"
 license = "MIT"
 name = "suimu"
 repository = "https://github.com/suisei-cn/suimu.git"
-version = "0.4.2"
+version = "0.4.3"
 [dependencies]
 anyhow = "1.0.41"
 chrono = "0.4.19"
