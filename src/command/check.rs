@@ -5,7 +5,7 @@ use std::str::FromStr;
 use anyhow::{anyhow, ensure, Result};
 use lazy_static::lazy_static;
 use levenshtein::levenshtein;
-use log::{info, warn};
+use log::{error, info, warn};
 use regex::Regex;
 use structopt::{clap, StructOpt};
 use unicode_normalization::{is_nfc, UnicodeNormalization};
@@ -68,6 +68,8 @@ lazy_static! {
 }
 
 pub fn check(opts: CheckOpt) -> Result<()> {
+    let mut has_err = false;
+
     let csv_file: PathBuf = opts.csv_file;
     info!("CSV file: {:?}", csv_file);
 
@@ -90,11 +92,13 @@ pub fn check(opts: CheckOpt) -> Result<()> {
     info!("Checking entry support...");
     for x in &check_result {
         if x.video_type.is_empty() {
+            // Often used to skip a conversion
             warn!("{}: Empty video_type", x);
             continue;
         }
         if let Err(v) = Platform::from_str(&x.video_type) {
-            warn!("{}: {}", x, v);
+            error!("{}: {}", x, v);
+            has_err = true;
         }
     }
 
@@ -102,10 +106,12 @@ pub fn check(opts: CheckOpt) -> Result<()> {
     info!("Checking potential typos...");
     for x in &check_result {
         if x.title.trim() != x.title {
-            warn!("{}: Spaces around title", x);
+            error!("{}: Spaces around title", x);
+            has_err = true;
         }
         if x.artist.trim() != x.artist {
-            warn!("{}: Spaces around artist", x);
+            error!("{}: Spaces around artist", x);
+            has_err = true;
         }
     }
 
@@ -113,18 +119,20 @@ pub fn check(opts: CheckOpt) -> Result<()> {
     info!("Checking Unicode NFC conformity...");
     for x in &check_result {
         if !is_nfc(&x.title) {
-            warn!(
+            error!(
                 "{}: Title is not in NFC, please change to '{}'",
                 x,
                 x.title.chars().nfc()
             );
+            has_err = true;
         }
         if !is_nfc(&x.artist) {
-            warn!(
+            error!(
                 "{}: Artist is not in NFC, please change to '{}'",
                 x,
                 x.artist.chars().nfc()
             );
+            has_err = true;
         }
     }
 
@@ -139,27 +147,35 @@ pub fn check(opts: CheckOpt) -> Result<()> {
     similarity_check("Title", &check_result_altered, |x| &x.title);
     similarity_check("Artist", &check_result, |x| &x.artist);
 
+    info!("Validating fields...");
+
     let converted_result = check_result
         .into_iter()
-        .map(|x| {
+        .filter_map(|x| {
             let x_desc = x.to_string();
             let v: Result<Music> = x.try_into();
             match v {
                 Ok(m) => Some(m),
                 Err(e) => {
-                    warn!("{}: Failed to convert to music: {}", x_desc, e);
+                    if &e.to_string() == "No status present" {
+                        // Often used to skip a conversion
+                        warn!("{}: Failed to convert to music: {}", x_desc, e);
+                    } else {
+                        error!("{}: Failed to convert to music: {}", x_desc, e);
+                        has_err = true;
+                    }
                     None
                 }
             }
         })
-        .flatten()
         .collect::<Vec<Music>>();
 
     // Logic analysis
     info!("Checking entry logic...");
     for x in &converted_result {
         if let Err(v) = check_logic(x) {
-            warn!("{}: {}", x, v);
+            error!("{}: {}", x, v);
+            has_err = true;
         }
     }
 
@@ -170,7 +186,11 @@ pub fn check(opts: CheckOpt) -> Result<()> {
         println!("{}", base);
     }
 
-    Ok(())
+    if has_err {
+        Err(anyhow!("Some hard checks didn't pass."))
+    } else {
+        Ok(())
+    }
 }
 
 #[test]
