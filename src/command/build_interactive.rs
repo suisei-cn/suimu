@@ -57,13 +57,13 @@ fn get_path(mut path: PathBuf) -> Result<Vec<String>> {
         let entries = get_all_visible_children(&path)?;
         Ok(format_paths(entries.into_iter()))
     } else if let Some(parent) = path.parent() {
-        let children = get_all_visible_children(&parent.to_owned())?
-            .into_iter()
-            .filter(|x| match (x.file_name(), path.file_name()) {
+        let children = get_all_visible_children(parent)?.into_iter().filter(|x| {
+            match (x.file_name(), path.file_name()) {
                 (Some(cur_name), Some(input_name)) => cur_name.starts_with(input_name),
                 (Some(_), None) => true,
                 _ => false,
-            });
+            }
+        });
         Ok(format_paths(children))
     } else {
         bail!("{} does not have parent", path.display())
