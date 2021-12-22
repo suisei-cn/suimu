@@ -41,8 +41,8 @@ impl TryFrom<MaybeMusic> for Music {
     type Error = anyhow::Error;
 
     fn try_from(v: MaybeMusic) -> Result<Music> {
-        let datetime = parse_time(&v.datetime)?;
         let status = v.status.ok_or_else(|| anyhow!("No status present"))?;
+        let datetime = parse_time(&v.datetime)?;
         let video_type = Platform::from_str(v.video_type.trim())
             .map_err(|_| anyhow!("Platform not supported"))?;
 
