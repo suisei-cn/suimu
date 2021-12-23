@@ -12,6 +12,8 @@ enum Suimu {
     Build(BuildOpt),
     BuildInteractive,
     Check(CheckOpt),
+    #[cfg(feature = "update")]
+    CheckUpdate,
 }
 
 fn main() -> Result<()> {
@@ -27,6 +29,8 @@ fn main() -> Result<()> {
         Suimu::Build(build_opt) => build(build_opt)?,
         Suimu::Check(check_opt) => check(check_opt)?,
         Suimu::BuildInteractive => build_interactive()?,
+        #[cfg(feature = "update")]
+        Suimu::CheckUpdate => check_update()?,
     }
     Ok(())
 }
