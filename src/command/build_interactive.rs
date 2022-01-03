@@ -126,6 +126,11 @@ impl FromInteractive for BuildOpt {
             .message("output json URL base")
             .default("")
             .build();
+        let output_diff_question = Question::input("output_diff")
+            .when(is_advance_mode)
+            .message("output diff json path")
+            .default("")
+            .build();
         let answers = requestty::prompt([
             csv_file_question,
             out_dir_question,
@@ -136,6 +141,7 @@ impl FromInteractive for BuildOpt {
             ytdl_question,
             output_json_question,
             baseurl_question,
+            output_diff_question,
         ])?;
         debug!("Answers: {:#?}", answers);
 
@@ -150,7 +156,11 @@ impl FromInteractive for BuildOpt {
                 "" => None,
                 i => Some(i.into()),
             },
-            match get_answer!(answers, "baseurl_question").as_ref() {
+            match get_answer!(answers, "baseurl").as_ref() {
+                "" => None,
+                i => Some(i.into()),
+            },
+            match get_answer!(answers, "output_diff").as_ref() {
                 "" => None,
                 i => Some(i.into()),
             },

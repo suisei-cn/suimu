@@ -1,15 +1,16 @@
 use std::collections::HashSet;
 use std::convert::TryInto;
 use std::fs::File;
+use std::io::BufReader;
 use std::path::PathBuf;
 
 use anyhow::{ensure, Result};
-use chrono::{DateTime, FixedOffset};
+use chrono::{DateTime, FixedOffset, Utc};
 use log::{debug, info, warn};
-use serde::{Serialize, Serializer};
+use serde::{Deserialize, Serialize};
 use structopt::{clap, StructOpt};
 
-use crate::utils::{check_csv, process_music, EnvConf};
+use crate::utils::{check_csv, process_music, rfc3339, EnvConf};
 use crate::{Music, Platform};
 
 const EXTENSION: &str = "m4a";
@@ -44,25 +45,29 @@ pub struct BuildOpt {
 
     #[structopt(long, about = "youtube-dl executable", default_value = "youtube-dl")]
     ytdl: String,
+
+    #[structopt(long, about = "Target diff file")]
+    output_diff: Option<PathBuf>,
 }
 
 #[derive(Serialize)]
+struct OutputDiff<'a> {
+    added: Vec<&'a OutputMusic>,
+    removed: Vec<&'a OutputMusic>,
+    #[serde(serialize_with = "rfc3339::serialize_utc")]
+    last_updated: DateTime<Utc>,
+}
+
+#[derive(Serialize, Deserialize, PartialEq)]
 pub struct OutputMusic {
     url: String,
-    #[serde(serialize_with = "serialize_rfc3339")]
+    #[serde(with = "rfc3339::with_rfc3339")]
     datetime: DateTime<FixedOffset>,
     title: String,
     artist: String,
     performer: String,
     status: u16,
     source: String,
-}
-
-pub fn serialize_rfc3339<S: Serializer>(
-    val: &DateTime<FixedOffset>,
-    serializer: S,
-) -> Result<S::Ok, S::Error> {
-    serializer.serialize_str(&val.to_rfc3339())
 }
 
 impl OutputMusic {
@@ -98,6 +103,7 @@ impl BuildOpt {
         ytdl: String,
         output_json: Option<PathBuf>,
         baseurl: Option<String>,
+        output_diff: Option<PathBuf>,
     ) -> Self {
         Self {
             csv_file,
@@ -108,6 +114,7 @@ impl BuildOpt {
             ytdl,
             output_json,
             baseurl,
+            output_diff,
         }
     }
 }
@@ -182,6 +189,42 @@ pub fn build(opts: BuildOpt) -> Result<()> {
 
     let length = music_process_arr.len();
 
+    let mut old_output = None;
+    if opts.output_json.is_some() && opts.output_diff.is_some() {
+        let output_json = opts.output_json.clone().unwrap();
+        if !output_json.exists() {
+            info!("Old output_json not found, assuming empty.");
+        } else {
+            let old_json = File::open(output_json)?;
+            let was_output =
+                serde_json::from_reader::<_, Vec<OutputMusic>>(BufReader::new(old_json));
+            if let Err(x) = was_output {
+                warn!("Failed to read old JSON, assuming empty: {:?}", x);
+                old_output = Some(vec![]);
+            } else {
+                let list = was_output
+                    .unwrap()
+                    .into_iter()
+                    .filter(|x| {
+                        let mut path = output_dir.clone();
+                        let filename = x.url.split('/').last().unwrap();
+                        path.push(filename);
+                        if path.exists() {
+                            true
+                        } else {
+                            warn!(
+                                "{} is present in the list, but the file is missing.",
+                                filename
+                            );
+                            false
+                        }
+                    })
+                    .collect();
+                old_output = Some(list);
+            }
+        }
+    }
+
     info!("=============== Starting build ===============");
     for (idx, i) in music_process_arr.iter().enumerate() {
         info!("======== Building {} / {} ========", idx + 1, length);
@@ -190,8 +233,9 @@ pub fn build(opts: BuildOpt) -> Result<()> {
     info!("=============== Finishing build ===============");
 
     if opts.output_json.is_some() {
+        // Generate new output.
         let baseurl = opts.baseurl.unwrap();
-        let output = music_arr
+        let new_output = music_arr
             .iter()
             .filter(|x| {
                 if x.is_member_only() {
@@ -209,8 +253,20 @@ pub fn build(opts: BuildOpt) -> Result<()> {
             })
             .map(|x| OutputMusic::from(x, &baseurl))
             .collect::<Vec<_>>();
-        let output_json_text = serde_json::to_string(&output)?;
+        let output_json_text = serde_json::to_string(&new_output)?;
         std::fs::write(opts.output_json.unwrap(), output_json_text)?;
+
+        // Writing diff.
+        if let Some(oop) = old_output {
+            let removed = oop.iter().filter(|x| !new_output.contains(x)).collect();
+            let added = new_output.iter().filter(|x| !oop.contains(x)).collect();
+            let output_json_text = serde_json::to_string(&OutputDiff {
+                removed,
+                added,
+                last_updated: Utc::now(),
+            })?;
+            std::fs::write(opts.output_diff.unwrap(), output_json_text)?;
+        }
     }
 
     Ok(())

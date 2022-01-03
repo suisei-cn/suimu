@@ -2,6 +2,7 @@ mod interactive;
 mod maybemusic;
 mod music;
 mod process_music;
+pub mod rfc3339;
 
 use std::io::Read;
 
