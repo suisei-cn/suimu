@@ -41,5 +41,5 @@ features = ["precommit-hook", "run-cargo-clippy", "run-cargo-fmt"]
 version = "1"
 
 [features]
-default = ["update"]
+default = []
 update = ["reqwest"]
