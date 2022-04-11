@@ -45,6 +45,10 @@ impl TryFrom<MaybeMusic> for Music {
         let datetime = parse_time(&v.datetime)?;
         let video_type = Platform::from_str(v.video_type.trim())
             .map_err(|_| anyhow!("Platform not supported"))?;
+        let video_id = v.video_id.trim().to_string();
+        if video_id.is_empty() {
+            return Err(anyhow!("video_id is empty"));
+        }
 
         let title = v.title.trim();
 
@@ -70,7 +74,7 @@ impl TryFrom<MaybeMusic> for Music {
             datetime,
             status,
             video_type,
-            video_id: v.video_id.trim().to_string(),
+            video_id,
             title: title.to_string(),
             artist: v.artist.trim().to_string(),
             performer: v.performer.trim().to_string(),
